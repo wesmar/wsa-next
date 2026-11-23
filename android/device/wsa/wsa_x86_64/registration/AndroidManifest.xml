@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WSA-Next © 2026 Marek Wesołowski - wesmar -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.wsanext.registration">
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Protection level "normal": the official way to read the Google Services Framework ID. -->
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+
+    <application
+        android:label="@string/app_name"
+        android:icon="@android:drawable/sym_def_app_icon"
+        android:allowBackup="false">
+
+        <!-- Woken when Android has started and when Play services have checked in with Google
+             (that is when the ID exists; Play services send it to every app). -->
+        <receiver android:name=".TriggerReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="com.google.android.checkin.CHECKIN_COMPLETE" />
+            </intent-filter>
+        </receiver>
+
+        <!-- The notification's own buttons. -->
+        <receiver android:name=".ActionReceiver" android:exported="false" />
+    </application>
+</manifest>

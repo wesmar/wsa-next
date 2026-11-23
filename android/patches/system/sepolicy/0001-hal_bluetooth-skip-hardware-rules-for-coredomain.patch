@@ -1,0 +1,60 @@
+From: WSA-Next <dev@kvc.pl>
+Date: Fri, 20 Nov 2026 17:10:00 +0100
+Subject: [PATCH] hal_bluetooth: skip vendor hardware rules for coredomain HALs
+
+A platform (system_ext / coredomain) Bluetooth HCI HAL that bridges HCI
+over vsock does not touch sysfs, rfkill, uhid, UART or vendor properties.
+Scope the hardware-specific allow rules in private/hal_bluetooth.te to
+{ hal_bluetooth -coredomain } so hal_server_domain(<dom>, hal_bluetooth)
+passes coredomain neverallow checks without loosening them.
+
+diff --git a/private/hal_bluetooth.te b/private/hal_bluetooth.te
+--- a/private/hal_bluetooth.te
++++ b/private/hal_bluetooth.te
+@@ -6,30 +6,32 @@ binder_call(hal_bluetooth_server, servicemanager)
+ hal_attribute_hwservice(hal_bluetooth, hal_bluetooth_hwservice)
+ hal_attribute_service(hal_bluetooth, hal_bluetooth_service)
+ 
+-wakelock_use(hal_bluetooth);
++# Hardware-specific rules apply only to vendor Bluetooth HALs, not platform (coredomain)
++# virtual/bridge HALs such as WSA's vsock Bluetooth HCI HAL.
++wakelock_use({ hal_bluetooth -coredomain });
+ 
+ # The HAL toggles rfkill to power the chip off/on.
+-allow hal_bluetooth self:global_capability_class_set net_admin;
++allow { hal_bluetooth -coredomain } self:global_capability_class_set net_admin;
+ 
+ # bluetooth factory file accesses.
+-r_dir_file(hal_bluetooth, bluetooth_efs_file)
++r_dir_file({ hal_bluetooth -coredomain }, bluetooth_efs_file)
+ 
+-allow hal_bluetooth { uhid_device hci_attach_dev }:chr_file rw_file_perms;
++allow { hal_bluetooth -coredomain } { uhid_device hci_attach_dev }:chr_file rw_file_perms;
+ 
+ # sysfs access.
+-r_dir_file(hal_bluetooth, sysfs_type)
+-allow hal_bluetooth sysfs_bluetooth_writable:file rw_file_perms;
+-allow hal_bluetooth self:global_capability2_class_set wake_alarm;
++r_dir_file({ hal_bluetooth -coredomain }, sysfs_type)
++allow { hal_bluetooth -coredomain } sysfs_bluetooth_writable:file rw_file_perms;
++allow { hal_bluetooth -coredomain } self:global_capability2_class_set wake_alarm;
+ 
+ # Allow write access to bluetooth-specific properties
+-set_prop(hal_bluetooth, bluetooth_a2dp_offload_prop)
+-set_prop(hal_bluetooth, bluetooth_audio_hal_prop)
+-set_prop(hal_bluetooth, bluetooth_finder_prop)
+-set_prop(hal_bluetooth, bluetooth_prop)
+-set_prop(hal_bluetooth, exported_bluetooth_prop)
++set_prop({ hal_bluetooth -coredomain }, bluetooth_a2dp_offload_prop)
++set_prop({ hal_bluetooth -coredomain }, bluetooth_audio_hal_prop)
++set_prop({ hal_bluetooth -coredomain }, bluetooth_finder_prop)
++set_prop({ hal_bluetooth -coredomain }, bluetooth_prop)
++set_prop({ hal_bluetooth -coredomain }, exported_bluetooth_prop)
+ 
+ # /proc access (bluesleep etc.).
+-allow hal_bluetooth proc_bluetooth_writable:file rw_file_perms;
++allow { hal_bluetooth -coredomain } proc_bluetooth_writable:file rw_file_perms;
+ 
+ # allow to run with real-time scheduling policy
+-allow hal_bluetooth self:global_capability_class_set sys_nice;
++allow { hal_bluetooth -coredomain } self:global_capability_class_set sys_nice;

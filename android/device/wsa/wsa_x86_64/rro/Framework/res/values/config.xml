@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- WSA has no lock screen: the Windows session is the lock. WSA 2407 disabled it
+         through SettingsProvider (lockscreen.disabled); Android 14+ reads the lock screen
+         state from LockSettings, which honours this default. Without it the keyguard
+         sleep token keeps every activity invisible, so no window reaches Windows. -->
+    <bool name="config_disableLockscreenByDefault">true</bool>
+
+    <!-- Links opened from Android apps go to the Windows default browser: WSA's UserApp
+         handles http(s) and custom tabs and forwards them to Windows. In WSA 2407 it got
+         the browser role as the only system browser; name it explicitly so that a
+         preinstalled browser (Chrome in the Google Play variant) does not take over. -->
+    <string name="config_defaultBrowser" translatable="false">com.microsoft.windows.userapp</string>
+
+    <!-- No screen-off fade: WSA's display has no panel to fade, and the fade's GL surface can
+         block in eglSwapBuffers on WSA's GPU path, which hangs DisplayPowerController until
+         the watchdog restarts system_server (seen on 2026-11-20: "Blocked in handler on
+         PowerManagerService ... ColorFade.draw"). -->
+    <bool name="config_displayColorFadeDisabled">true</bool>
+
+    <!-- The PC's modem gives Android a SIM, a network and SMS, but no calls (a laptop's modem
+         has no voice path): apps see a device that sends messages and does not dial. -->
+    <bool name="config_voice_capable">false</bool>
+</resources>

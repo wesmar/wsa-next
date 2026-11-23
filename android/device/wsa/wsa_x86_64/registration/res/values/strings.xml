@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WSA-Next © 2026 Marek Wesołowski - wesmar -->
+<resources>
+    <string name="app_name">WSA-Next registration</string>
+    <string name="channel">Google Play registration</string>
+    <string name="title">Register this PC with Google Play</string>
+    <string name="text">Device ID: %1$s</string>
+    <string name="text_long">Google Play needs this once for a new installation: copy the ID, open the registration page, sign in with your Google account, paste the ID and press Register. A few minutes later, open the Play Store again.\n\nDevice ID: %1$s</string>
+    <string name="copy">Copy ID</string>
+    <string name="open">Open page</string>
+    <string name="done">Done</string>
+    <string name="copied">Device ID copied</string>
+    <string name="clip_label">Google Services Framework ID</string>
+</resources>

@@ -1,0 +1,14 @@
+# WSA-Next © 2026 Marek Wesołowski - wesmar
+# RIL daemon of WSA (device/wsa/wsa_x86_64/telephony): a platform process that serves the radio
+# HAL (android.hardware.radio.*) with Cuttlefish's AT-command RIL. The modem is on the host:
+# WSA-Next's modem bridge connects over a Hyper-V socket (vsock port "WSRL").
+type wsa_rild, domain, coredomain;
+type wsa_rild_exec, system_file_type, exec_type, file_type;
+init_daemon_domain(wsa_rild)
+
+# Standard radio HAL server domain (hal_telephony.te scopes the hardware rules to
+# { hal_telephony_server -coredomain }, android/patches/system/sepolicy).
+hal_server_domain(wsa_rild, hal_telephony)
+
+# The modem bridge connects to the RIL.
+allow wsa_rild self:vsock_socket { create bind listen accept read write getattr getopt setopt shutdown };

@@ -1,0 +1,22 @@
+# WSA-Next © 2026 Marek Wesołowski - wesmar
+# Bluetooth HCI HAL of WSA (device/wsa/wsa_x86_64/bluetooth): a platform process that serves
+# android.hardware.bluetooth.IBluetoothHci/default and forwards HCI packets to the Bluetooth
+# bridge on the Windows host over a Hyper-V socket (vsock).
+type hal_bluetooth_wsa, domain, coredomain;
+type hal_bluetooth_wsa_exec, system_file_type, exec_type, file_type;
+init_daemon_domain(hal_bluetooth_wsa)
+
+# Standard Bluetooth HAL server domain (registers IBluetoothHci/default and talks to the
+# Bluetooth stack over Binder). Hardware-only vendor rules (sysfs, rfkill, uhid, UART) are
+# excluded for coredomain by patches/system/sepolicy/0001-hal_bluetooth-skip-hardware-rules-for-coredomain.patch.
+hal_server_domain(hal_bluetooth_wsa, hal_bluetooth)
+binder_use(hal_bluetooth_wsa)
+
+# The Windows bridge connects to the HAL (vsock port "WSBT").
+allow hal_bluetooth_wsa self:vsock_socket { create bind listen accept read write getattr getopt setopt shutdown };
+
+# Whether the bridge runs: written by the HAL, read by system_server, which allows or restricts
+# Bluetooth accordingly.
+system_internal_prop(wsa_bluetooth_prop)
+set_prop(hal_bluetooth_wsa, wsa_bluetooth_prop)
+get_prop(system_server, wsa_bluetooth_prop)

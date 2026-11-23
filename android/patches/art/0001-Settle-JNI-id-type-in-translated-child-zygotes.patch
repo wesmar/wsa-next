@@ -1,0 +1,20 @@
+diff --git a/runtime/runtime.cc b/runtime/runtime.cc
+index b1e71d3..8148a83 100644
+--- a/runtime/runtime.cc
++++ b/runtime/runtime.cc
+@@ -1220,6 +1220,15 @@ void Runtime::InitNonZygoteOrPostFork(
+   }
+ 
+   if (is_child_zygote) {
++    // A child zygote that runs translated code (the app zygote of an app with only
++    // ARM libraries) preloads guest libraries with the JNI function table in use
++    // now, and the native bridge makes that table callable from guest code once.
++    // Its children would switch to the final JNI id type after fork and get a
++    // different table that guest code cannot call, so settle the id type here.
++    if (is_native_bridge_loaded_ && LIKELY(automatically_set_jni_ids_indirection_) &&
++        CanSetJniIdType()) {
++      SetJniIdType(IsJavaDebuggable() ? JniIdType::kIndices : JniIdType::kPointer);
++    }
+     // If creating a child-zygote we only initialize native bridge. The rest of
+     // runtime post-fork logic would spin up threads for Binder and JDWP.
+     // Instead, the Java side of the child process will call a static main in a

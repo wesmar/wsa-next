@@ -1,0 +1,52 @@
+// WSA-Next © 2026 Marek Wesołowski - wesmar
+// Root for apps, every request confirmed on Windows with Windows Hello (the elevation bridge of
+// WSA-Next.exe, vsock port "WSEV"). Instead of Magisk-style root: the images stay as built and
+// signed, SELinux stays enforcing, nothing has to be hidden from apps, and nothing is rooted
+// until the user turns it on in WSA-Next.
+//
+//   0                  what apps run - root is uid 0 ("0", "0 -c 'command'", "0 program args")
+//   wsa-elevated       the daemon that asks Windows (init service, socket /dev/socket/wsa_elevate)
+//   wsa-elevate-exec   started by the daemon only; its executable enters the elevated domain
+//
+// Installed on userdebug builds (PRODUCT_PACKAGES_DEBUG): the elevated domain exists only there.
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+cc_defaults {
+    name: "wsa_elevate_defaults",
+    system_ext_specific: true,
+    cflags: [
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+    ],
+}
+
+cc_binary {
+    name: "wsa-elevated",
+    defaults: ["wsa_elevate_defaults"],
+    init_rc: ["wsa-elevated.rc"],
+    srcs: ["elevated.cpp"],
+    shared_libs: [
+        "libcutils",
+        "liblog",
+    ],
+}
+
+cc_binary {
+    name: "wsa-zero",
+    stem: "0",
+    defaults: ["wsa_elevate_defaults"],
+    srcs: ["zero.cpp"],
+    // 0 replaces AOSP's debug su (/system/xbin/su, usable by adb shell only): no su binary in the
+    // image, nothing for root checks to find. "adb root" does not need it.
+    overrides: ["su"],
+}
+
+cc_binary {
+    name: "wsa-elevate-exec",
+    defaults: ["wsa_elevate_defaults"],
+    srcs: ["exec.cpp"],
+}

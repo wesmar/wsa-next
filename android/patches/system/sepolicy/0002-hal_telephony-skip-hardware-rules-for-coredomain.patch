@@ -1,0 +1,55 @@
+From: WSA-Next <dev@kvc.pl>
+Date: Sun, 22 Nov 2026 13:30:00 +0100
+Subject: [PATCH] hal_telephony: skip hardware rules for coredomain HALs
+
+A platform (system_ext / coredomain) RIL whose modem is reached over vsock
+does not touch radio or tty devices, EFS, sysfs or the vendor shell. Scope
+those rules in private/hal_telephony.te to { hal_telephony_server -coredomain }
+so hal_server_domain(<dom>, hal_telephony) passes the coredomain neverallow
+checks without loosening them.
+
+diff --git a/private/hal_telephony.te b/private/hal_telephony.te
+index 306d459..0ed3156 100644
+--- a/private/hal_telephony.te
++++ b/private/hal_telephony.te
+@@ -13,13 +13,15 @@ allow hal_telephony_server cgroup:dir create_dir_perms;
+ allow hal_telephony_server cgroup:{ file lnk_file } r_file_perms;
+ allow hal_telephony_server cgroup_v2:dir create_dir_perms;
+ allow hal_telephony_server cgroup_v2:{ file lnk_file } r_file_perms;
+-allow hal_telephony_server radio_device:chr_file rw_file_perms;
+-allow hal_telephony_server radio_device:blk_file r_file_perms;
+-allow hal_telephony_server efs_file:dir create_dir_perms;
+-allow hal_telephony_server efs_file:file create_file_perms;
+-allow hal_telephony_server vendor_shell_exec:file rx_file_perms;
+-allow hal_telephony_server bluetooth_efs_file:file r_file_perms;
+-allow hal_telephony_server bluetooth_efs_file:dir r_dir_perms;
++# Hardware-specific rules apply only to vendor RILs, not platform (coredomain) RILs such as
++# WSA's, whose modem is on the host behind a vsock connection.
++allow { hal_telephony_server -coredomain } radio_device:chr_file rw_file_perms;
++allow { hal_telephony_server -coredomain } radio_device:blk_file r_file_perms;
++allow { hal_telephony_server -coredomain } efs_file:dir create_dir_perms;
++allow { hal_telephony_server -coredomain } efs_file:file create_file_perms;
++allow { hal_telephony_server -coredomain } vendor_shell_exec:file rx_file_perms;
++allow { hal_telephony_server -coredomain } bluetooth_efs_file:file r_file_perms;
++allow { hal_telephony_server -coredomain } bluetooth_efs_file:dir r_dir_perms;
+ 
+ # property service
+ get_prop(hal_telephony_server, telephony_config_prop)
+@@ -27,7 +29,7 @@ set_prop(hal_telephony_server, radio_control_prop)
+ set_prop(hal_telephony_server, radio_prop)
+ set_prop(hal_telephony_server, telephony_status_prop)
+ 
+-allow hal_telephony_server tty_device:chr_file rw_file_perms;
++allow { hal_telephony_server -coredomain } tty_device:chr_file rw_file_perms;
+ 
+ # Allow hal_telephony_server to create and use netlink sockets.
+ allow hal_telephony_server self:netlink_socket create_socket_perms_no_ioctl;
+@@ -38,7 +40,7 @@ allow hal_telephony_server self:netlink_kobject_uevent_socket create_socket_perm
+ wakelock_use(hal_telephony_server)
+ 
+ r_dir_file(hal_telephony_server, proc_net_type)
+-r_dir_file(hal_telephony_server, sysfs_type)
++r_dir_file({ hal_telephony_server -coredomain }, sysfs_type)
+ 
+ # granting the ioctl permission for hal_telephony_server should be device specific
+ allow hal_telephony_server self:socket create_socket_perms_no_ioctl;

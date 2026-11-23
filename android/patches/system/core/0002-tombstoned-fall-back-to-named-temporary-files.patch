@@ -1,0 +1,71 @@
+tombstoned: fall back to named temporary files without O_TMPFILE.
+
+Windows Subsystem for Android shares /data/tombstones (and /data/anr) with the host
+over virtiofs, which has no O_TMPFILE on its kernel: tombstoned aborted on every crash
+("failed to create temporary tombstone ... Operation not supported") and no crash
+report reached the host. Write to a named ".temporaryN" file in that case and rename
+it into place.
+
+diff --git a/debuggerd/tombstoned/tombstoned.cpp b/debuggerd/tombstoned/tombstoned.cpp
+index 2c72379..12a88e1 100644
+--- a/debuggerd/tombstoned/tombstoned.cpp
++++ b/debuggerd/tombstoned/tombstoned.cpp
+@@ -62,6 +62,10 @@ enum CrashStatus {
+ struct CrashArtifact {
+   unique_fd fd;
+ 
++  // Name of the file inside the queue directory when O_TMPFILE is not supported there
++  // (virtiofs shares, e.g. Windows Subsystem for Android); empty for O_TMPFILE files.
++  std::string temporary_name;
++
+   static CrashArtifact devnull() {
+     CrashArtifact result;
+     result.fd.reset(open("/dev/null", O_WRONLY | O_CLOEXEC));
+@@ -146,6 +150,13 @@ class CrashQueue {
+ 
+     std::optional<std::string> path;
+     result.fd.reset(openat(dir_fd_, ".", O_WRONLY | O_APPEND | O_TMPFILE | O_CLOEXEC, 0660));
++    if (result.fd == -1 && (errno == EOPNOTSUPP || errno == EISDIR || errno == EINVAL)) {
++      // The filesystem has no O_TMPFILE: write to a named file and rename it when done.
++      static size_t counter = 0;
++      result.temporary_name = StringPrintf(".temporary%zu", counter++);
++      result.fd.reset(openat(dir_fd_, result.temporary_name.c_str(),
++                             O_WRONLY | O_APPEND | O_CREAT | O_TRUNC | O_CLOEXEC, 0660));
++    }
+     if (result.fd == -1) {
+       PLOG(FATAL) << "failed to create temporary tombstone in " << dir_path_;
+     }
+@@ -408,7 +419,18 @@ static void crash_request_cb(evutil_socket_t sockfd, short ev, void* arg) {
+   }
+ }
+ 
+-static bool rename_tombstone_fd(borrowed_fd fd, borrowed_fd dirfd, const std::string& path) {
++static bool rename_tombstone_fd(const CrashArtifact& artifact, borrowed_fd dirfd,
++                                const std::string& path) {
++  if (!artifact.temporary_name.empty()) {
++    if (renameat(dirfd.get(), artifact.temporary_name.c_str(), dirfd.get(), path.c_str()) != 0) {
++      PLOG(ERROR) << "failed to rename tombstone to " << path;
++      unlinkat(dirfd.get(), artifact.temporary_name.c_str(), 0);
++      return false;
++    }
++    return true;
++  }
++  borrowed_fd fd = artifact.fd;
++
+   // Always try to unlink the tombstone file.
+   // linkat doesn't let us replace a file, so we need to unlink before linking
+   // our results onto disk, and if we fail for some reason, we should delete
+@@ -460,11 +482,11 @@ static void crash_completed(borrowed_fd sockfd, std::unique_ptr<Crash> crash) {
+     if (!paths.proto) {
+       LOG(ERROR) << "missing path for proto tombstone";
+     } else {
+-      rename_tombstone_fd(crash->output.proto->fd, queue->dir_fd(), *paths.proto);
++      rename_tombstone_fd(*crash->output.proto, queue->dir_fd(), *paths.proto);
+     }
+   }
+ 
+-  if (rename_tombstone_fd(crash->output.text.fd, queue->dir_fd(), paths.text)) {
++  if (rename_tombstone_fd(crash->output.text, queue->dir_fd(), paths.text)) {
+     if (crash->crash_type == kDebuggerdJavaBacktrace) {
+       LOG(ERROR) << "Traces for pid " << crash->crash_pid << " written to: " << paths.text;
+     } else {

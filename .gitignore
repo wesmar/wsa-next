@@ -1,0 +1,33 @@
+# Build output
+bin/
+obj/
+x64/
+.vs/
+*.user
+*.aps
+
+# Build and analysis output
+android/reports/
+__pycache__/
+*.pyc
+
+# Never commit Microsoft binaries, decompiled code or signing material
+*.apk
+*.jar
+*.vhdx
+*.img
+*.pk8
+*.pem
+*.p12
+*.pfx
+vendor/
+
+# Personal tooling and notes stay local
+merge.ps1
+src.txt
+src.md
+
+# Release tooling stays outside the repository (a copy is kept there)
+github.sh
+release/
+release-now.*

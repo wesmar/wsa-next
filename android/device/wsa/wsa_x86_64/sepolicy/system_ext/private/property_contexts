@@ -1,0 +1,4 @@
+external_storage.emulated_0.mounted          u:object_r:wsa_storage_prop:s0 exact bool
+sys.wsa.bluetooth.bridge                     u:object_r:wsa_bluetooth_prop:s0 exact bool
+sys.wsa.fingerprint.hello                    u:object_r:wsa_fingerprint_prop:s0 exact bool
+persist.wsa.fingerprint.                     u:object_r:wsa_fingerprint_prop:s0 prefix string

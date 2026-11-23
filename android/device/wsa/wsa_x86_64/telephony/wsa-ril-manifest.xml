@@ -1,0 +1,54 @@
+<!-- WSA-Next © 2026 Marek Wesołowski - wesmar
+     The radio HAL instances published by libril (Cuttlefish's android.hardware.radio@2.1.xml),
+     declared in the framework manifest because the RIL is a system_ext HAL. -->
+<manifest version="1.0" type="framework">
+    <hal format="aidl">
+        <name>android.hardware.radio.config</name>
+        <version>4</version>
+        <fqname>IRadioConfig/default</fqname>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.radio.data</name>
+        <version>4</version>
+        <fqname>IRadioData/slot1</fqname>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.radio.ims</name>
+        <version>3</version>
+        <fqname>IRadioIms/slot1</fqname>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.radio.ims.media</name>
+        <version>3</version>
+        <fqname>IImsMedia/default</fqname>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.radio.messaging</name>
+        <version>4</version>
+        <fqname>IRadioMessaging/slot1</fqname>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.radio.modem</name>
+        <version>4</version>
+        <fqname>IRadioModem/slot1</fqname>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.radio.network</name>
+        <version>4</version>
+        <fqname>IRadioNetwork/slot1</fqname>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.radio.sim</name>
+        <version>4</version>
+        <fqname>IRadioSim/slot1</fqname>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.radio.sap</name>
+        <fqname>ISap/slot1</fqname>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.radio.voice</name>
+        <version>4</version>
+        <fqname>IRadioVoice/slot1</fqname>
+    </hal>
+</manifest>

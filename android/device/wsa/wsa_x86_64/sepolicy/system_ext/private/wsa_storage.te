@@ -1,0 +1,6 @@
+# WSA-Next © 2026 Marek Wesołowski - wesmar
+# vold signals that the primary user's emulated storage is mounted (see
+# patches/system/vold); the WSA init script then mounts the shared Windows user
+# folders under /data/media/0.
+system_internal_prop(wsa_storage_prop)
+set_prop(vold, wsa_storage_prop)

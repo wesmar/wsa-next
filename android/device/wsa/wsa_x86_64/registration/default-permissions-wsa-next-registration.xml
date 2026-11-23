@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WSA-Next © 2026 Marek Wesołowski - wesmar
+     WsaNextRegistration may post its one notification from the first boot on. -->
+<exceptions>
+    <exception package="org.wsanext.registration">
+        <permission name="android.permission.POST_NOTIFICATIONS" fixed="false" />
+    </exception>
+</exceptions>

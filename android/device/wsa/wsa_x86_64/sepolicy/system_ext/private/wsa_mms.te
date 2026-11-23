@@ -1,0 +1,18 @@
+# WSA-Next © 2026 Marek Wesołowski - wesmar
+# MMS relay of WSA (device/wsa/wsa_x86_64/telephony): joins MmsService's connection on
+# /dev/socket/wsa_mms with WSA-Next's on vsock port "WSMM"; Windows opens the operator's MMS APN
+# on the PC's modem. It only passes bytes: no network access of its own.
+type wsa_mms, domain, coredomain;
+type wsa_mms_exec, system_file_type, exec_type, file_type;
+type wsa_mms_socket, file_type, coredomain_socket;
+init_daemon_domain(wsa_mms)
+
+# WSA-Next on Windows connects to the daemon.
+allow wsa_mms self:vsock_socket { create bind listen accept read write getattr getopt setopt shutdown };
+# MmsService connects on the socket init creates.
+allow wsa_mms self:unix_stream_socket { accept listen read write getattr getopt shutdown };
+
+# MmsService runs in the phone's process (radio). It looks for the socket to know it runs on
+# WSA-Next, then connects.
+unix_socket_connect(radio, wsa_mms, wsa_mms)
+allow radio wsa_mms_socket:sock_file getattr;

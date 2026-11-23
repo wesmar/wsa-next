@@ -1,0 +1,28 @@
+// WSA-Next © 2026 Marek Wesołowski - wesmar
+// Google Play variant: Google knows a new installation as a new, uncertified device. Instead of
+// adb and command lines, this small system app shows the device's Google Services Framework ID
+// in a notification (a Windows notification on WSA) as soon as Play services have it, with
+// "Copy ID", "Open the registration page" (it opens in the Windows browser) and "Done".
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+android_app {
+    name: "WsaNextRegistration",
+    srcs: ["src/**/*.java"],
+    resource_dirs: ["res"],
+    sdk_version: "current",
+    system_ext_specific: true,
+    required: ["wsa-next-registration-permissions"],
+}
+
+// Notifications are a runtime permission: granted to this app from the first boot on.
+prebuilt_etc {
+    name: "wsa-next-registration-permissions",
+    src: "default-permissions-wsa-next-registration.xml",
+    // The policy reads only *.xml files ("Non-xml file ... ignoring").
+    filename_from_src: true,
+    sub_dir: "default-permissions",
+    system_ext_specific: true,
+}

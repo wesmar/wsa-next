@@ -1,0 +1,39 @@
+// WSA-Next © 2026 Marek Wesołowski - wesmar
+// Houdini (ARM -> x86 translation) ships entirely in the WSA vendor partition:
+// /vendor/lib*/libhoudini.so, /vendor/bin/houdini*, /vendor/lib*/arm* and the binfmt_misc
+// registration in vendor init. The system image only provides the paths that native
+// bridge (ro.dalvik.vm.native.bridge=libhoudini.so) and the vendor init expect on /system.
+
+install_symlink {
+    name: "wsa_libhoudini_symlink",
+    installed_location: "lib/libhoudini.so",
+    symlink_target: "/vendor/lib/libhoudini.so",
+}
+
+install_symlink {
+    name: "wsa_libhoudini64_symlink",
+    installed_location: "lib64/libhoudini.so",
+    symlink_target: "/vendor/lib64/libhoudini.so",
+}
+
+// Bind-mount targets for /vendor/bin/houdini{,64} (see vendor init.windows_x86_64.rc).
+sh_binary {
+    name: "wsa_houdini_mountpoint",
+    src: "houdini-mountpoint.sh",
+    filename: "houdini",
+}
+
+sh_binary {
+    name: "wsa_houdini64_mountpoint",
+    src: "houdini-mountpoint.sh",
+    filename: "houdini64",
+}
+
+// Google Play variant: ro.dalvik.vm.native.bridge=libndk_translation.so selects Google's
+// ARM64 translator (vendor/ndk_translation, see tools/fetch_gms.sh) for 64-bit processes.
+// It has no 32-bit build, so the 32-bit zygote finds Houdini under the same name.
+install_symlink {
+    name: "wsa_ndk_translation32_houdini",
+    installed_location: "lib/libndk_translation.so",
+    symlink_target: "/vendor/lib/libhoudini.so",
+}

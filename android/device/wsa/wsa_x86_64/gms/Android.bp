@@ -1,0 +1,16 @@
+// WSA-Next © 2026 Marek Wesołowski - wesmar
+// Google Play variant: the runtime permissions of Google Play services that a phone's setup
+// wizard grants (see the XML). Installed from wsa_x86_64_gapps.mk.
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+prebuilt_etc {
+    name: "wsa-next-gms-permissions",
+    src: "default-permissions-wsa-next-gms.xml",
+    // The policy reads only *.xml files ("Non-xml file ... ignoring").
+    filename_from_src: true,
+    sub_dir: "default-permissions",
+    product_specific: true,
+}

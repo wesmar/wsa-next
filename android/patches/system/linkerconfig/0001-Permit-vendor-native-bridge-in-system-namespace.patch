@@ -1,0 +1,37 @@
+linkerconfig: permit a vendor native bridge in the system default namespace.
+
+libnativebridge loads ro.dalvik.vm.native.bridge into the system default namespace.
+Windows Subsystem for Android ships Houdini in /vendor/${LIB} and exposes it through a
+/system/${LIB} symlink, which the isolated namespace rejects, so ARM apps fail with
+"is for EM_AARCH64 instead of EM_X86_64". Permit /vendor/${LIB} only when a native
+bridge is configured.
+
+diff --git a/contents/namespace/systemdefault.cc b/contents/namespace/systemdefault.cc
+index 88af8eb..90fdf0d 100644
+--- a/contents/namespace/systemdefault.cc
++++ b/contents/namespace/systemdefault.cc
+@@ -17,6 +17,8 @@
+ // Framework-side code runs in this namespace. Libs from /vendor partition can't
+ // be loaded in this namespace.
+ 
++#include <android-base/properties.h>
++
+ #include "linkerconfig/common.h"
+ #include "linkerconfig/environment.h"
+ #include "linkerconfig/namespace.h"
+@@ -80,6 +82,15 @@ void SetupSystemPermittedPaths(Namespace* ns) {
+     // System processes can use product libs only if device is not treblelized.
+     ns->AddPermittedPath(product + "/${LIB}");
+   }
++
++  // A native bridge shipped by the vendor (Houdini on Windows Subsystem for Android) is
++  // loaded by libnativebridge into this namespace through a /system/${LIB} symlink to
++  // /vendor/${LIB}. Permit that location only when the device configures a bridge.
++  const std::string native_bridge =
++      android::base::GetProperty("ro.dalvik.vm.native.bridge", "0");
++  if (!native_bridge.empty() && native_bridge != "0") {
++    ns->AddPermittedPath("/vendor/${LIB}");
++  }
+ }
+ 
+ Namespace BuildSystemDefaultNamespace([[maybe_unused]] const Context& ctx) {

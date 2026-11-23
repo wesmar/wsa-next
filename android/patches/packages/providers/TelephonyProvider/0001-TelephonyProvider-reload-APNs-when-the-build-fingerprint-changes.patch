@@ -1,0 +1,25 @@
+TelephonyProvider: reload the APN list when the build fingerprint changes.
+
+TelephonyProvider updates its APN database from apns-conf.xml only when ro.build.id
+changes. WSA-Next releases of one Android version keep AOSP's build id and differ in
+the build number (and so in the fingerprint), so an update never reloaded the list:
+the APNs that a release added (MMS through the PC's modem) stayed missing until the
+user data was reset. Compare the fingerprint instead; the database is still reloaded
+only when the file's checksum has changed.
+
+diff --git a/src/com/android/providers/telephony/TelephonyProvider.java b/src/com/android/providers/telephony/TelephonyProvider.java
+index 9e1c189..c6570ee 100644
+--- a/src/com/android/providers/telephony/TelephonyProvider.java
++++ b/src/com/android/providers/telephony/TelephonyProvider.java
+@@ -3420,7 +3420,10 @@ public class TelephonyProvider extends ContentProvider
+         mOpenHelper = new DatabaseHelper(getContext());
+         mDefaultSubId = SubscriptionManager.getDefaultSubscriptionId();
+         boolean isNewBuild = false;
+-        String newBuildId = SystemProperties.get("ro.build.id", null);
++        // WSA-Next: the build fingerprint, which every release changes (its build number); the
++        // build id stays the same between releases of one Android version, so an update would
++        // never reload the APN list.
++        String newBuildId = SystemProperties.get("ro.build.fingerprint", null);
+         SharedPreferences sp = getContext().getSharedPreferences(BUILD_ID_FILE,
+                 Context.MODE_PRIVATE);
+         if (!TextUtils.isEmpty(newBuildId)) {

@@ -1,0 +1,43 @@
+// WSA-Next © 2026 Marek Wesołowski - wesmar
+// Bluetooth for WSA: an HCI HAL whose controller is the Bluetooth bridge on the Windows host
+// (the PC's own adapter through WinRT), reached over a Hyper-V socket. The HAL publishes whether
+// the bridge runs (sys.wsa.bluetooth.bridge); without it Android offers no Bluetooth.
+//
+// It lives in system_ext with a framework manifest fragment: the WSA vendor partition is
+// reused unchanged. The Bluetooth stack prefers this AIDL HAL over the vendor's HIDL simulator
+// (android.hardware.bluetooth@1.1-service.sim), which stays installed but unused.
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+cc_binary {
+    name: "android.hardware.bluetooth-service.wsa",
+    relative_install_path: "hw",
+    system_ext_specific: true,
+    init_rc: ["android.hardware.bluetooth-service.wsa.rc"],
+    vintf_fragments: ["android.hardware.bluetooth-service.wsa.xml"],
+    srcs: [
+        "BluetoothHci.cpp",
+        "service.cpp",
+    ],
+    cflags: [
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+    ],
+    shared_libs: [
+        "libbase",
+        "libbinder_ndk",
+        "libcutils",
+        "libhidlbase",
+        "liblog",
+        "libutils",
+    ],
+    // Static: generic_system.mk allows no new libraries in /system, and the Bluetooth APEX
+    // carries its own copy of the interface library.
+    static_libs: [
+        "android.hardware.bluetooth-V1-ndk",
+        "android.hardware.bluetooth.hci",
+    ],
+}

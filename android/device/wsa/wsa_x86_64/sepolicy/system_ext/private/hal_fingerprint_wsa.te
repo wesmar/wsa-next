@@ -1,0 +1,20 @@
+# WSA-Next © 2026 Marek Wesołowski - wesmar
+# Fingerprint HAL of WSA (device/wsa/wsa_x86_64/fingerprint): a platform process that serves
+# android.hardware.biometrics.fingerprint.IFingerprint/default with Windows Hello as the sensor,
+# reached over a Hyper-V socket (vsock).
+type hal_fingerprint_wsa, domain, coredomain;
+type hal_fingerprint_wsa_exec, system_file_type, exec_type, file_type;
+init_daemon_domain(hal_fingerprint_wsa)
+
+# Standard fingerprint HAL server domain (hal_fingerprint.te in AOSP 15 already scopes vendor
+# sysfs and fingerprint_vendor_data_file rules to { hal_fingerprint -coredomain }).
+hal_server_domain(hal_fingerprint_wsa, hal_fingerprint)
+
+# The Windows Hello bridge connects to the HAL (vsock port "WSFP").
+allow hal_fingerprint_wsa self:vsock_socket { create bind listen accept read write getattr getopt setopt shutdown };
+
+# sys.wsa.fingerprint.hello (is Windows Hello available) and persist.wsa.fingerprint.u<user>
+# (the HAL's enrollments): written by the HAL; system_server reads the first to link Windows Hello.
+system_internal_prop(wsa_fingerprint_prop)
+set_prop(hal_fingerprint_wsa, wsa_fingerprint_prop)
+get_prop(system_server, wsa_fingerprint_prop)

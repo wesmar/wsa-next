@@ -1,0 +1,30 @@
+--- a/core/jni/android_os_storage_StorageManager.cpp	2026-11-18 00:11:20.460537100 +0100
++++ b/core/jni/android_os_storage_StorageManager.cpp	2026-11-18 00:11:37.870093000 +0100
+@@ -17,6 +17,8 @@
+ #define LOG_TAG "StorageManager"
+ #include <android-base/file.h>
+ #include <android-base/logging.h>
++#include <linux/magic.h>
++#include <sys/vfs.h>
+ #include <android-base/properties.h>
+ #include <android-base/unique_fd.h>
+ #include <fcntl.h>
+@@ -52,6 +54,18 @@
+         return JNI_FALSE;
+     }
+ 
++    // Windows Subsystem for Android shares Windows user folders into emulated storage
++    // over virtiofs, which has no project quota support. Treat those files like
++    // sdcardfs: quota is not tracked through project ids there.
++    static bool virtiofsEnabled =
++            android::base::GetBoolProperty("external_storage.virtiofs.enabled", false);
++    if (virtiofsEnabled) {
++        struct statfs sfs;
++        if (fstatfs(fd, &sfs) == 0 && sfs.f_type == FUSE_SUPER_MAGIC) {
++            return JNI_TRUE;
++        }
++    }
++
+     int ret = ioctl(fd, FS_IOC_FSGETXATTR, &fsx);
+     if (ret == -1) {
+         PLOG(ERROR) << "Failed to get extended attributes for " << utf_chars_path.c_str()

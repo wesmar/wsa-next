@@ -1,0 +1,11 @@
+# WSA-Next © 2026 Marek Wesołowski - wesmar
+# WSA's initrd (wsainit) mounts binfmt_misc before Android starts; the vendor init script
+# mounts it again for Houdini and gets EBUSY either way. Keep that harmless second
+# attempt out of the denial log.
+dontaudit init binfmt_miscfs:dir mounton;
+
+# The Google Play variant registers Google's ARM64 translator for ARM64 executables from
+# /system/etc/init/ndk_translation.rc, replacing the vendor's Houdini entries; platform
+# policy only lets vendor_init write binfmt_misc (and excludes init from its neverallow).
+allow init binfmt_miscfs:dir search;
+allow init binfmt_miscfs:file w_file_perms;

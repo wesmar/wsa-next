@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WSA-Next © 2026 Marek Wesołowski - wesmar
+     What WSA-Next's telephony offers: a SIM, a network and SMS from the PC's modem. Not calls
+     (android.hardware.telephony.calling, android.software.telecom) and not mobile data
+     (android.hardware.telephony.data): the PC has its own network and no voice path. -->
+<permissions>
+    <feature name="android.hardware.telephony" />
+    <feature name="android.hardware.telephony.radio.access" />
+    <feature name="android.hardware.telephony.subscription" />
+    <feature name="android.hardware.telephony.gsm" />
+    <feature name="android.hardware.telephony.messaging" />
+</permissions>

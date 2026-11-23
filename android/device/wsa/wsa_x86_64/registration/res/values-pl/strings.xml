@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WSA-Next © 2026 Marek Wesołowski - wesmar -->
+<resources>
+    <string name="app_name">Rejestracja WSA-Next</string>
+    <string name="channel">Rejestracja w Google Play</string>
+    <string name="title">Zarejestruj ten komputer w Google Play</string>
+    <string name="text">Identyfikator urządzenia: %1$s</string>
+    <string name="text_long">Sklep Play potrzebuje tego jednorazowo dla nowej instalacji: skopiuj identyfikator, otwórz stronę rejestracji, zaloguj się na konto Google, wklej identyfikator i naciśnij Zarejestruj. Po kilku minutach otwórz ponownie Sklep Play.\n\nIdentyfikator urządzenia: %1$s</string>
+    <string name="copy">Kopiuj identyfikator</string>
+    <string name="open">Otwórz stronę</string>
+    <string name="done">Gotowe</string>
+    <string name="copied">Skopiowano identyfikator</string>
+    <string name="clip_label">Identyfikator Google Services Framework</string>
+</resources>

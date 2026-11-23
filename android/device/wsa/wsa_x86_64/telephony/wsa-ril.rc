@@ -1,0 +1,9 @@
+# WSA-Next © 2026 Marek Wesołowski - wesmar
+# The RIL daemon with Cuttlefish's AT-command RIL, listening on vsock port 0x5753524C ("WSRL")
+# for WSA-Next's modem bridge on Windows. Without a modem on the PC nothing connects, and Android
+# shows no SIM, as a phone without one.
+service wsa-ril-daemon /system_ext/bin/hw/libcuttlefish-rild -l /system_ext/lib64/libcuttlefish-ril-2.so -- -L 0x5753524C
+    class main
+    user radio
+    group radio inet misc log readproc wakelock
+    capabilities BLOCK_SUSPEND

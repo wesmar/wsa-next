@@ -1,0 +1,9 @@
+/system_ext/bin/hw/android\.hardware\.bluetooth-service\.wsa    u:object_r:hal_bluetooth_wsa_exec:s0
+/system_ext/bin/hw/android\.hardware\.biometrics\.fingerprint-service\.wsa    u:object_r:hal_fingerprint_wsa_exec:s0
+/system_ext/bin/wsa-elevated    u:object_r:wsa_elevated_exec:s0
+/system_ext/bin/wsa-elevate-exec    u:object_r:wsa_elevate_exec:s0
+/dev/socket/wsa_elevate    u:object_r:wsa_elevate_socket:s0
+/dev/wsa(/.*)?    u:object_r:wsa_elevate_dir:s0
+/system_ext/bin/hw/libcuttlefish-rild    u:object_r:wsa_rild_exec:s0
+/system_ext/bin/wsa-mms    u:object_r:wsa_mms_exec:s0
+/dev/socket/wsa_mms    u:object_r:wsa_mms_socket:s0

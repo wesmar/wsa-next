@@ -1,0 +1,43 @@
+From: WSA-Next <dev@kvc.pl>
+Date: Sun, 22 Nov 2026 20:50:00 +0100
+Subject: [PATCH] RIL: refuse data calls without retries
+
+With the host modem (-L) there is no mobile data: the PC has its own network and
+MMS go through the host. requestSetupDataCall failed on the missing radio
+interface with a generic error, which libril passes on with a suggested retry
+time of 0, so Android retried every few milliseconds and its network stack ran
+out of receivers (more than 1000 network monitors within a minute). Answer at
+once with "service option not supported", a permanent failure Android does not
+retry, and no suggested retry time.
+
+diff --git a/guest/hals/ril/reference-ril/reference-ril.c b/guest/hals/ril/reference-ril/reference-ril.c
+index 8d52a04..7433148 100644
+--- a/guest/hals/ril/reference-ril/reference-ril.c
++++ b/guest/hals/ril/reference-ril/reference-ril.c
+@@ -2793,6 +2793,26 @@ static void requestSetupDataCall(void *data, size_t datalen, RIL_Token t)
+ 
+     apn = ((const char **)data)[2];
+ 
++    if (s_listen_port >= 0) {
++        /* WSA-Next: no mobile data - the PC has its own network, and MMS go through the host.
++         * A permanent failure, which Android does not retry: the generic error below came back
++         * to it as "retry at once", and it retried every few milliseconds. */
++        RIL_Data_Call_Response_v11 response;
++        memset(&response, 0, sizeof(response));
++        response.status = 0x20; /* PDP_FAIL_SERVICE_OPTION_NOT_SUPPORTED */
++        response.suggestedRetryTime = -1;
++        response.cid = -1;
++        response.active = -1;
++        response.type = "";
++        response.ifname = "";
++        response.addresses = "";
++        response.dnses = "";
++        response.gateways = "";
++        response.pcscf = "";
++        RIL_onRequestComplete(t, RIL_E_SUCCESS, &response, sizeof(response));
++        return;
++    }
++
+ #ifdef USE_TI_COMMANDS
+     // Config for multislot class 10 (probably default anyway eh?)
+     err = at_send_command("AT%CPRIM=\"GMM\",\"CONFIG MULTISLOT_CLASS=<10>\"",

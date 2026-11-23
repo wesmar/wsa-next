@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WSA-Next © 2026 Marek Wesołowski - wesmar -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.wsanext.overlay.googleservices">
+    <overlay android:targetPackage="android"
+        android:isStatic="true" android:priority="12" />
+</manifest>

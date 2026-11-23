@@ -1,0 +1,39 @@
+Input: no keyboard layout notification for built-in keyboards.
+
+WSA's keyboard (virtual_keyboard, Microsoft 045e:0301) is built in, and Windows applies the
+user's own layout before Android sees a key: Polish, German or any other letters arrive right
+with Android's default layout. Android 15 still posts "Keyboard layout set to English (US). Tap
+to change" after every start, which WSA shows as a Windows notification, and choosing another
+Android layout there would translate the keys a second time. Built-in keyboards are left out
+of the notification; external ones (USB, Bluetooth) still get it, since Android translates
+their keys itself.
+
+diff --git a/services/core/java/com/android/server/input/KeyboardLayoutManager.java b/services/core/java/com/android/server/input/KeyboardLayoutManager.java
+--- a/services/core/java/com/android/server/input/KeyboardLayoutManager.java
++++ b/services/core/java/com/android/server/input/KeyboardLayoutManager.java
+@@ -831,7 +831,7 @@ class KeyboardLayoutManager implements InputManager.InputDeviceListener {
+         for (int i = 0; i < mConfiguredKeyboards.size(); i++) {
+             int deviceId = mConfiguredKeyboards.keyAt(i);
+             KeyboardConfiguration config = mConfiguredKeyboards.valueAt(i);
+-            if (isVirtualDevice(deviceId)) {
++            if (isVirtualDevice(deviceId) || isBuiltInKeyboard(deviceId)) {
+                 continue;
+             }
+             // If we have a keyboard with no selected layouts, we should always show missing
+@@ -1118,6 +1118,16 @@ class KeyboardLayoutManager implements InputManager.InputDeviceListener {
+         return vdm != null && vdm.isInputDeviceOwnedByVirtualDevice(deviceId);
+     }
+
++    /**
++     * A keyboard built into the device. On WSA that is the host's keyboard, whose keys Windows
++     * translates with the user's layout before they reach Android, so there is no Android layout
++     * to choose for it.
++     */
++    private boolean isBuiltInKeyboard(int deviceId) {
++        InputDevice device = getInputDevice(deviceId);
++        return device != null && !device.isExternal();
++    }
++
+     private static int[] getScriptCodes(@Nullable Locale locale) {
+         if (locale == null) {
+             return new int[0];

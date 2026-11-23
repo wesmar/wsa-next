@@ -1,0 +1,23 @@
+From: WSA-Next <dev@kvc.pl>
+Date: Sun, 22 Nov 2026 13:30:00 +0100
+Subject: [PATCH] radio compat library: platform build
+
+Built for system_ext and installed in /system_ext/lib64: WSA-Next's RIL is a
+platform HAL, and the platform linker namespace does not search a hw folder.
+
+diff --git a/radio/aidl/compat/libradiocompat/Android.bp b/radio/aidl/compat/libradiocompat/Android.bp
+index a3a8c20..7f66a67 100644
+--- a/radio/aidl/compat/libradiocompat/Android.bp
++++ b/radio/aidl/compat/libradiocompat/Android.bp
+@@ -41,8 +41,9 @@ cc_defaults {
+ cc_library {
+     name: "android.hardware.radio-library.compat",
+     defaults: ["android.hardware.radio-library.aidl_deps"],
+-    relative_install_path: "hw",
+-    vendor: true,
++    // WSA-Next: used by a platform (system_ext) RIL, which links it from /system_ext/lib64 (the
++    // platform linker namespace does not search a hw subfolder).
++    system_ext_specific: true,
+     cflags: [
+         "-Wall",
+         "-Wextra",

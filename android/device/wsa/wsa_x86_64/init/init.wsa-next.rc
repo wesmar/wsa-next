@@ -1,0 +1,9 @@
+# WSA-Next © 2026 Marek Wesołowski - wesmar
+#
+# Debuggable builds start a shell on the serial console (system/core/rootdir/init.rc), and
+# ActivityManager then posts "Serial console enabled - performance is impacted", which WSA shows
+# as a Windows notification after every start. On WSA nobody sits at that console (adb and the
+# elevator are the ways in), so it is stopped right after init.rc starts it: same trigger,
+# parsed later, so this action runs second.
+on init && property:ro.debuggable=1
+    stop console

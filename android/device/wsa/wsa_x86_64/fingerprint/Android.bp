@@ -1,0 +1,38 @@
+// WSA-Next © 2026 Marek Wesołowski - wesmar
+// Fingerprint for WSA: an AIDL IFingerprint HAL backed by Windows Hello on the host
+// (fingerprint reader, face or PIN via WinRT UserConsentVerifier), reached over a Hyper-V
+// socket (CID 2, port "WSFP").
+//
+// Lives in system_ext with a framework manifest fragment, matching bluetooth-service.wsa,
+// because WSA's vendor partition is reused unchanged.
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+cc_binary {
+    name: "android.hardware.biometrics.fingerprint-service.wsa",
+    relative_install_path: "hw",
+    system_ext_specific: true,
+    init_rc: ["android.hardware.biometrics.fingerprint-service.wsa.rc"],
+    vintf_fragments: ["android.hardware.biometrics.fingerprint-service.wsa.xml"],
+    srcs: [
+        "WsaFingerprint.cpp",
+        "service.cpp",
+    ],
+    cflags: [
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+    ],
+    shared_libs: [
+        "libbase",
+        "libbinder_ndk",
+        "liblog",
+    ],
+    static_libs: [
+        "android.hardware.biometrics.fingerprint-V4-ndk",
+        "android.hardware.biometrics.common-V4-ndk",
+        "android.hardware.keymaster-V4-ndk",
+    ],
+}

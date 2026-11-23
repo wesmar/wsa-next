@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WSA-Next © 2026 Marek Wesołowski - wesmar
+     Google Play services (and the Google Services Framework, which shares its uid) get the
+     runtime permissions a phone with Google's apps gives them during the setup wizard. WSA starts
+     provisioned, without that wizard, so Play services had none: sign-ins with a phone number
+     stopped at "allow Google Play services to access SMS", Fast Pair could not scan for
+     Bluetooth devices, location and contacts sync did not work. Not fixed: each can be revoked in
+     Android's settings. Camera and microphone still need Windows' own consent for WSA. -->
+<exceptions>
+    <exception package="com.google.android.gms">
+        <!-- Location -->
+        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false" />
+        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false" />
+        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="false" />
+        <!-- Contacts and accounts -->
+        <permission name="android.permission.READ_CONTACTS" fixed="false" />
+        <permission name="android.permission.WRITE_CONTACTS" fixed="false" />
+        <permission name="android.permission.GET_ACCOUNTS" fixed="false" />
+        <!-- Phone: the phone number hint of sign-ins -->
+        <permission name="android.permission.READ_PHONE_STATE" fixed="false" />
+        <permission name="android.permission.CALL_PHONE" fixed="false" />
+        <permission name="android.permission.READ_CALL_LOG" fixed="false" />
+        <permission name="android.permission.WRITE_CALL_LOG" fixed="false" />
+        <permission name="android.permission.PROCESS_OUTGOING_CALLS" fixed="false" />
+        <!-- SMS: the SMS Retriever and SMS User Consent APIs of sign-ins -->
+        <permission name="android.permission.SEND_SMS" fixed="false" />
+        <permission name="android.permission.RECEIVE_SMS" fixed="false" />
+        <permission name="android.permission.READ_SMS" fixed="false" />
+        <permission name="android.permission.RECEIVE_MMS" fixed="false" />
+        <!-- Camera and microphone (code scanner, voice) -->
+        <permission name="android.permission.CAMERA" fixed="false" />
+        <permission name="android.permission.RECORD_AUDIO" fixed="false" />
+        <!-- Nearby devices: Fast Pair and Find My Device over the PC's Bluetooth -->
+        <permission name="android.permission.BLUETOOTH_SCAN" fixed="false" />
+        <permission name="android.permission.BLUETOOTH_CONNECT" fixed="false" />
+        <permission name="android.permission.BLUETOOTH_ADVERTISE" fixed="false" />
+        <permission name="android.permission.NEARBY_WIFI_DEVICES" fixed="false" />
+        <permission name="android.permission.UWB_RANGING" fixed="false" />
+        <!-- Body sensors -->
+        <permission name="android.permission.BODY_SENSORS" fixed="false" />
+        <!-- Photos, videos and audio (backup) -->
+        <permission name="android.permission.READ_MEDIA_IMAGES" fixed="false" />
+        <permission name="android.permission.READ_MEDIA_VIDEO" fixed="false" />
+        <permission name="android.permission.READ_MEDIA_AUDIO" fixed="false" />
+        <permission name="android.permission.ACCESS_MEDIA_LOCATION" fixed="false" />
+    </exception>
+</exceptions>

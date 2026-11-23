@@ -1,0 +1,508 @@
+MmsService: carry MMS through the WSA-Next host when Android has no cellular network.
+
+On Windows Subsystem for Android the SIM is in the PC's modem, which Windows drives; Android
+gets SMS through the RIL bridge but has no mobile data network, so MMS could not be sent or
+downloaded. When the WSA-Next relay daemon is present (/dev/socket/wsa_mms), MmsService asks
+no cellular network: each HTTP exchange goes through a loopback tunnel to the daemon, and
+WSA-Next on Windows opens the APN on the modem (ConnectivityManager.AcquireConnectionAsync)
+and connects to the APN's MMS proxy or MMS server. ApnSettings keeps the APN name and
+credentials for that; the "MMS data enabled" check is skipped, since Android has no mobile
+data setting there.
+
+diff --git a/src/com/android/mms/service/ApnSettings.java b/src/com/android/mms/service/ApnSettings.java
+index 8ac3482..f1f9043 100644
+--- a/src/com/android/mms/service/ApnSettings.java
++++ b/src/com/android/mms/service/ApnSettings.java
+@@ -44,6 +44,12 @@ public class ApnSettings {
+     private final int mProxyPort;
+     // Debug text for this APN: a concatenation of interesting columns of this APN
+     private final String mDebugText;
++    // The access point itself, for a modem reached through the host (WSA-Next): the APN name,
++    // the authentication type (ApnSetting.AUTH_TYPE_*, -1 unset), the user name and password
++    private String mApn;
++    private int mAuthType = -1;
++    private String mUser;
++    private String mPassword;
+ 
+     private static final String[] APN_PROJECTION = {
+             Telephony.Carriers.TYPE,
+@@ -153,8 +159,18 @@ public class ApnSettings {
+                         }
+                     }
+                 }
+-                return new ApnSettings(
++                final ApnSettings settings = new ApnSettings(
+                         mmscUrl, proxyAddress, proxyPort, getDebugText(cursor));
++                int authType = -1;
++                try {
++                    authType = Integer.parseInt(
++                            trimWithNullCheck(cursor.getString(COLUMN_AUTH_TYPE)));
++                } catch (NumberFormatException | NullPointerException e) {
++                    // Unset
++                }
++                settings.setAccessPoint(cursor.getString(COLUMN_APN), authType,
++                        cursor.getString(COLUMN_USER), cursor.getString(COLUMN_PASSWORD));
++                return settings;
+             }
+         }
+         return null;
+@@ -182,7 +198,10 @@ public class ApnSettings {
+             if (apn.getMmsProxyPort() != -1 /*UNSPECIFIED_INT*/) proxyPort = apn.getMmsProxyPort();
+         }
+ 
+-        return new ApnSettings(mmscUrl, proxy, proxyPort, apn.toString());
++        final ApnSettings settings = new ApnSettings(mmscUrl, proxy, proxyPort, apn.toString());
++        settings.setAccessPoint(apn.getApnName(), apn.getAuthType(), apn.getUser(),
++                apn.getPassword());
++        return settings;
+     }
+ 
+     private static String getDebugText(Cursor cursor) {
+@@ -230,6 +249,29 @@ public class ApnSettings {
+         return !TextUtils.isEmpty(mProxyAddress);
+     }
+ 
++    private void setAccessPoint(String apn, int authType, String user, String password) {
++        mApn = trimWithNullCheck(apn);
++        mAuthType = authType;
++        mUser = user;
++        mPassword = password;
++    }
++
++    public String getApn() {
++        return mApn;
++    }
++
++    public int getAuthType() {
++        return mAuthType;
++    }
++
++    public String getUser() {
++        return mUser;
++    }
++
++    public String getPassword() {
++        return mPassword;
++    }
++
+     private static boolean isValidApnType(String types, String requestType) {
+         // If APN type is unspecified, assume TYPE_ALL_STRING.
+         if (TextUtils.isEmpty(types)) {
+diff --git a/src/com/android/mms/service/DownloadRequest.java b/src/com/android/mms/service/DownloadRequest.java
+index 461cb64..423e009 100644
+--- a/src/com/android/mms/service/DownloadRequest.java
++++ b/src/com/android/mms/service/DownloadRequest.java
+@@ -91,7 +91,8 @@ public class DownloadRequest extends MmsRequest {
+                 apn.getProxyPort(),
+                 mMmsConfig,
+                 mSubId,
+-                requestId);
++                requestId,
++                apn);
+     }
+ 
+     @Override
+diff --git a/src/com/android/mms/service/MmsHttpClient.java b/src/com/android/mms/service/MmsHttpClient.java
+index 367253e..0bac62a 100644
+--- a/src/com/android/mms/service/MmsHttpClient.java
++++ b/src/com/android/mms/service/MmsHttpClient.java
+@@ -96,11 +96,21 @@ public class MmsHttpClient {
+             ConnectivityManager connectivityManager) {
+         mContext = context;
+         // Mms server is on a carrier private network so it may not be resolvable using 3rd party
+-        // private dns
+-        mNetwork = network.getPrivateDnsBypassingCopy();
++        // private dns. No network: WSA-Next's host connects for Android (WsaMmsRelay).
++        mNetwork = network != null ? network.getPrivateDnsBypassingCopy() : null;
+         mConnectivityManager = connectivityManager;
+     }
+ 
++    /**
++     * Execute an MMS HTTP request without the APN's access point (an Android network only).
++     */
++    public byte[] execute(String urlString, byte[] pdu, String method, boolean isProxySet,
++            String proxyHost, int proxyPort, Bundle mmsConfig, int subId, String requestId)
++            throws MmsHttpException {
++        return execute(urlString, pdu, method, isProxySet, proxyHost, proxyPort, mmsConfig, subId,
++                requestId, null);
++    }
++
+     /**
+      * Execute an MMS HTTP request, either a POST (sending) or a GET (downloading)
+      *
+@@ -114,27 +124,39 @@ public class MmsHttpClient {
+      * @param mmsConfig  The MMS config to use
+      * @param subId      The subscription ID used to get line number, etc.
+      * @param requestId  The request ID for logging
++     * @param apn        The APN, which the WSA-Next host opens on the PC's modem
+      * @return The HTTP response body
+      * @throws MmsHttpException For any failures
+      */
+     public byte[] execute(String urlString, byte[] pdu, String method, boolean isProxySet,
+-            String proxyHost, int proxyPort, Bundle mmsConfig, int subId, String requestId)
+-            throws MmsHttpException {
++            String proxyHost, int proxyPort, Bundle mmsConfig, int subId, String requestId,
++            ApnSettings apn) throws MmsHttpException {
+         LogUtil.d(requestId, "HTTP: " + method + " " + redactUrlForNonVerbose(urlString)
+                 + (isProxySet ? (", proxy=" + proxyHost + ":" + proxyPort) : "")
+                 + ", PDU size=" + (pdu != null ? pdu.length : 0));
+         checkMethod(method);
+         HttpURLConnection connection = null;
++        WsaMmsRelay.Tunnel tunnel = null;
+         try {
+-            Proxy proxy = Proxy.NO_PROXY;
+-            if (isProxySet) {
+-                proxy = new Proxy(Proxy.Type.HTTP,
+-                        new InetSocketAddress(mNetwork.getByName(proxyHost), proxyPort));
+-            }
+             final URL url = new URL(urlString);
+-            maybeWaitForIpv4(requestId, url);
+-            // Now get the connection
+-            connection = (HttpURLConnection) mNetwork.openConnection(url, proxy);
++            if (mNetwork == null) {
++                // WSA-Next: the host opens the APN on the PC's modem and connects to the proxy
++                // or the MMS server; the request goes through a loopback tunnel.
++                if (apn == null) {
++                    throw new MmsHttpException(0/*statusCode*/, "No APN for the WSA-Next host");
++                }
++                tunnel = WsaMmsRelay.open(apn, url, isProxySet, proxyHost, proxyPort, requestId);
++                connection = tunnel.openConnection(url);
++            } else {
++                Proxy proxy = Proxy.NO_PROXY;
++                if (isProxySet) {
++                    proxy = new Proxy(Proxy.Type.HTTP,
++                            new InetSocketAddress(mNetwork.getByName(proxyHost), proxyPort));
++                }
++                maybeWaitForIpv4(requestId, url);
++                // Now get the connection
++                connection = (HttpURLConnection) mNetwork.openConnection(url, proxy);
++            }
+             connection.setDoInput(true);
+             connection.setConnectTimeout(
+                     mmsConfig.getInt(SmsManager.MMS_CONFIG_HTTP_SOCKET_TIMEOUT));
+@@ -243,6 +265,9 @@ public class MmsHttpClient {
+             if (connection != null) {
+                 connection.disconnect();
+             }
++            if (tunnel != null) {
++                tunnel.close();
++            }
+         }
+     }
+ 
+diff --git a/src/com/android/mms/service/MmsNetworkManager.java b/src/com/android/mms/service/MmsNetworkManager.java
+index 91ff3dd..0ac5ceb 100644
+--- a/src/com/android/mms/service/MmsNetworkManager.java
++++ b/src/com/android/mms/service/MmsNetworkManager.java
+@@ -103,6 +103,10 @@ public class MmsNetworkManager {
+ 
+     private EventHandler mEventHandler;
+ 
++    // WSA-Next: the modem is the PC's, reached through the host, and Android has no cellular
++    // network of its own. MMS go through the host's relay (WsaMmsRelay) instead.
++    private final boolean mWsaRelay = WsaMmsRelay.isAvailable();
++
+     private final class EventHandler extends Handler {
+         EventHandler() {
+             super(Looper.getMainLooper());
+@@ -352,6 +356,11 @@ public class MmsNetworkManager {
+             // Since we are acquiring the network, remove the network release task if exists.
+             mReleaseHandler.removeCallbacks(mNetworkReleaseTask);
+             mMmsRequestCount += 1;
++            if (mWsaRelay) {
++                // The host opens the operator's MMS APN for each request (WsaMmsRelay).
++                LogUtil.d(requestId, "MmsNetworkManager: through the WSA-Next host");
++                return WsaMmsRelay.NET_ID;
++            }
+             if (mNetwork != null) {
+                 // Already available
+                 LogUtil.d(requestId, "MmsNetworkManager: already available");
+@@ -502,7 +511,10 @@ public class MmsNetworkManager {
+     public MmsHttpClient getOrCreateHttpClient() {
+         synchronized (this) {
+             if (mMmsHttpClient == null) {
+-                if (mNetwork != null) {
++                if (mWsaRelay) {
++                    // No Android network: the client connects through the host's relay
++                    mMmsHttpClient = new MmsHttpClient(mContext, null, getConnectivityManager());
++                } else if (mNetwork != null) {
+                     // Create new MmsHttpClient for the current Network
+                     mMmsHttpClient = new MmsHttpClient(mContext, mNetwork, mConnectivityManager);
+                 }
+diff --git a/src/com/android/mms/service/MmsService.java b/src/com/android/mms/service/MmsService.java
+index 6897e40..24539ba 100644
+--- a/src/com/android/mms/service/MmsService.java
++++ b/src/com/android/mms/service/MmsService.java
+@@ -281,8 +281,9 @@ public class MmsService extends Service implements MmsRequest.RequestManager {
+             // Make sure subId has MMS data. We intentionally do this after attempting to send via a
+             // carrier messaging service as the carrier messaging service may want to handle this in
+             // a different way and may not be restricted by whether data is enabled for an APN on a
+-            // given subscription.
+-            if (!getTelephonyManager(subId).isDataEnabledForApn(ApnSetting.TYPE_MMS)) {
++            // given subscription. WSA-Next: no mobile data in Android, the host carries MMS.
++            if (!WsaMmsRelay.isAvailable()
++                    && !getTelephonyManager(subId).isDataEnabledForApn(ApnSetting.TYPE_MMS)) {
+                 // ENABLE_MMS_DATA_REQUEST_REASON_OUTGOING_MMS is set for only SendReq case, since
+                 // AcknowledgeInd and NotifyRespInd are parts of downloading sequence.
+                 // TODO: Should consider ReadRecInd(Read Report)?
+@@ -380,8 +381,9 @@ public class MmsService extends Service implements MmsRequest.RequestManager {
+                 return;
+             }
+ 
+-            // Make sure subId has MMS data
+-            if (!getTelephonyManager(subId).isDataEnabledForApn(ApnSetting.TYPE_MMS)) {
++            // Make sure subId has MMS data (WSA-Next: the host carries MMS)
++            if (!WsaMmsRelay.isAvailable()
++                    && !getTelephonyManager(subId).isDataEnabledForApn(ApnSetting.TYPE_MMS)) {
+                 sendSettingsIntentForFailedMms(/*isIncoming=*/ true, subId);
+                 handleError(downloadedIntent, SmsManager.MMS_ERROR_DATA_DISABLED, mmsStats);
+                 return;
+diff --git a/src/com/android/mms/service/SendRequest.java b/src/com/android/mms/service/SendRequest.java
+index dd44f2c..ac28beb 100644
+--- a/src/com/android/mms/service/SendRequest.java
++++ b/src/com/android/mms/service/SendRequest.java
+@@ -99,7 +99,8 @@ public class SendRequest extends MmsRequest {
+                 apn.getProxyPort(),
+                 mMmsConfig,
+                 mSubId,
+-                requestId);
++                requestId,
++                apn);
+     }
+ 
+     private GenericPdu parsePdu() {
+diff --git a/src/com/android/mms/service/WsaMmsRelay.java b/src/com/android/mms/service/WsaMmsRelay.java
+new file mode 100644
+index 0000000..0cce7db
+--- /dev/null
++++ b/src/com/android/mms/service/WsaMmsRelay.java
+@@ -0,0 +1,229 @@
++/*
++ * WSA-Next © 2026 Marek Wesołowski - wesmar
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.mms.service;
++
++import android.net.LocalSocket;
++import android.net.LocalSocketAddress;
++
++import java.io.Closeable;
++import java.io.File;
++import java.io.IOException;
++import java.io.InputStream;
++import java.io.OutputStream;
++import java.net.HttpURLConnection;
++import java.net.InetAddress;
++import java.net.InetSocketAddress;
++import java.net.Proxy;
++import java.net.ServerSocket;
++import java.net.Socket;
++import java.net.URL;
++import java.nio.charset.StandardCharsets;
++
++/**
++ * WSA-Next (Windows Subsystem for Android): the SIM is in the PC's modem, which Windows drives,
++ * and Android has no cellular network of its own. MMS go this way instead:
++ *
++ * <pre>
++ *   MmsHttpClient -> loopback tunnel (here) -> /dev/socket/wsa_mms (the wsa-mms daemon)
++ *     -> vsock -> WSA-Next on Windows: opens the APN on the modem and connects to the server
++ * </pre>
++ *
++ * The tunnel's first line names the APN and the server (the APN's MMS proxy, or the MMS server
++ * itself); Windows answers "OK" once connected, then the bytes go through unchanged. One tunnel
++ * carries one HTTP exchange.
++ */
++final class WsaMmsRelay {
++    /** The net ID MmsNetworkManager reports: there is no Android network. */
++    static final int NET_ID = 0;
++
++    private static final String SOCKET_NAME = "wsa_mms";
++    private static final File SOCKET_FILE = new File("/dev/socket/" + SOCKET_NAME);
++    // A guard: Windows answers as soon as the APN is up and the server took the connection.
++    private static final int ANSWER_TIMEOUT_MS = 60 * 1000;
++    private static final int MAX_LINE = 1024;
++
++    private WsaMmsRelay() {}
++
++    /** True on WSA-Next, whose relay daemon owns the socket. */
++    static boolean isAvailable() {
++        return SOCKET_FILE.exists();
++    }
++
++    /**
++     * Asks the host for a connection to the APN's MMS proxy (when set) or to the server of `url`,
++     * through the APN.
++     */
++    static Tunnel open(ApnSettings apn, URL url, boolean isProxySet, String proxyHost,
++            int proxyPort, String requestId) throws IOException {
++        final boolean https = "https".equalsIgnoreCase(url.getProtocol());
++        final String host = isProxySet ? proxyHost : url.getHost();
++        final int port = isProxySet ? proxyPort
++                : (url.getPort() != -1 ? url.getPort() : url.getDefaultPort());
++        final LocalSocket relay = new LocalSocket();
++        try {
++            relay.connect(new LocalSocketAddress(SOCKET_NAME,
++                    LocalSocketAddress.Namespace.RESERVED));
++            relay.setSoTimeout(ANSWER_TIMEOUT_MS);
++            final String request = "MMS\t" + field(apn.getApn()) + '\t' + apn.getAuthType()
++                    + '\t' + field(apn.getUser()) + '\t' + field(apn.getPassword())
++                    + '\t' + field(host) + '\t' + port + '\n';
++            relay.getOutputStream().write(request.getBytes(StandardCharsets.UTF_8));
++            final String answer = readLine(relay.getInputStream());
++            if (!"OK".equals(answer)) {
++                throw new IOException("WSA-Next host: " + answer);
++            }
++            relay.setSoTimeout(0);
++            LogUtil.i(requestId, "HTTP: through the WSA-Next host, APN " + apn.getApn());
++            return new Tunnel(relay, https && !isProxySet, isProxySet || https);
++        } catch (IOException e) {
++            closeQuietly(relay);
++            throw e;
++        }
++    }
++
++    /** One HTTP exchange through the host: a loopback listener for a single connection. */
++    static final class Tunnel implements Closeable {
++        private final LocalSocket mRelay;
++        private final ServerSocket mServer;
++        // https straight to the server: the client's CONNECT is answered here (the host has
++        // already connected to the server).
++        private final boolean mAnswerConnect;
++        // The loopback end acts as the client's HTTP proxy (an MMS proxy, or https).
++        private final boolean mAsProxy;
++        private volatile Socket mClient;
++
++        Tunnel(LocalSocket relay, boolean answerConnect, boolean asProxy) throws IOException {
++            mRelay = relay;
++            mAnswerConnect = answerConnect;
++            mAsProxy = asProxy;
++            mServer = new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
++            final Thread thread = new Thread(this::serve, "WsaMmsRelay");
++            thread.setDaemon(true);
++            thread.start();
++        }
++
++        HttpURLConnection openConnection(URL url) throws IOException {
++            final InetSocketAddress local =
++                    new InetSocketAddress(InetAddress.getLoopbackAddress(), mServer.getLocalPort());
++            if (mAsProxy) {
++                return (HttpURLConnection) url.openConnection(new Proxy(Proxy.Type.HTTP, local));
++            }
++            // Straight to the MMS server: the loopback end in the URL, the server's name in Host.
++            final URL direct = new URL("http", local.getAddress().getHostAddress(),
++                    local.getPort(), url.getFile());
++            final HttpURLConnection connection =
++                    (HttpURLConnection) direct.openConnection(Proxy.NO_PROXY);
++            connection.setRequestProperty("Host",
++                    url.getPort() != -1 ? url.getHost() + ":" + url.getPort() : url.getHost());
++            return connection;
++        }
++
++        private void serve() {
++            try (Socket client = mServer.accept()) {
++                mClient = client;
++                closeQuietly(mServer);
++                final InputStream fromClient = client.getInputStream();
++                final OutputStream toClient = client.getOutputStream();
++                if (mAnswerConnect) {
++                    skipHeader(fromClient);
++                    toClient.write("HTTP/1.1 200 Connection established\r\n\r\n"
++                            .getBytes(StandardCharsets.US_ASCII));
++                    toClient.flush();
++                }
++                final Thread upstream = new Thread(() -> {
++                    try {
++                        copy(fromClient, mRelay.getOutputStream());
++                        mRelay.shutdownOutput();
++                    } catch (IOException e) {
++                        // The tunnel ends
++                    }
++                }, "WsaMmsRelay-up");
++                upstream.setDaemon(true);
++                upstream.start();
++                copy(mRelay.getInputStream(), toClient);
++                client.shutdownOutput();
++                upstream.join();
++            } catch (IOException | InterruptedException e) {
++                // close(), or a side went away
++            } finally {
++                close();
++            }
++        }
++
++        @Override
++        public void close() {
++            closeQuietly(mServer);
++            closeQuietly(mClient);
++            closeQuietly(mRelay);
++        }
++    }
++
++    private static String field(String value) {
++        return value == null ? "" : value.replace('\t', ' ').replace('\r', ' ').replace('\n', ' ');
++    }
++
++    private static String readLine(InputStream in) throws IOException {
++        final StringBuilder line = new StringBuilder();
++        for (;;) {
++            final int c = in.read();
++            if (c < 0) {
++                throw new IOException("WSA-Next host gave no answer");
++            }
++            if (c == '\n') {
++                return line.toString();
++            }
++            if (line.length() >= MAX_LINE) {
++                throw new IOException("WSA-Next host: answer too long");
++            }
++            line.append((char) c);
++        }
++    }
++
++    // The header of the client's CONNECT request, up to the empty line.
++    private static void skipHeader(InputStream in) throws IOException {
++        int matched = 0;  // of "\r\n\r\n"
++        for (int count = 0; matched < 4; ++count) {
++            final int c = in.read();
++            if (c < 0 || count > 16 * 1024) {
++                throw new IOException("no CONNECT request");
++            }
++            matched = (c == '\r' && (matched == 0 || matched == 2)) ? matched + 1
++                    : (c == '\n' && (matched == 1 || matched == 3)) ? matched + 1
++                    : (c == '\r') ? 1 : 0;
++        }
++    }
++
++    private static void copy(InputStream in, OutputStream out) throws IOException {
++        final byte[] buffer = new byte[16 * 1024];
++        int count;
++        while ((count = in.read(buffer)) > 0) {
++            out.write(buffer, 0, count);
++            out.flush();
++        }
++    }
++
++    private static void closeQuietly(Closeable closeable) {
++        if (closeable == null) {
++            return;
++        }
++        try {
++            closeable.close();
++        } catch (IOException e) {
++            // Already closed
++        }
++    }
++}

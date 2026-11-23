@@ -1,0 +1,9 @@
+# WSA-Next © 2026 Marek Wesołowski - wesmar
+# ARM64 programs run through Google's ndk_translation; 32-bit ARM programs keep WSA's Houdini.
+# The vendor init script registers Houdini for both from a property trigger; replace its
+# ARM64 entries at boot, after all property triggers have run.
+on boot && property:ro.enable.native.bridge.exec=1 && property:ro.dalvik.vm.isa.arm64=x86_64
+    write /proc/sys/fs/binfmt_misc/arm64_exe -1
+    write /proc/sys/fs/binfmt_misc/arm64_dyn -1
+    copy /system/etc/binfmt_misc/arm64_exe /proc/sys/fs/binfmt_misc/register
+    copy /system/etc/binfmt_misc/arm64_dyn /proc/sys/fs/binfmt_misc/register

@@ -1,0 +1,69 @@
+Ethernet: let PC devices set the network capabilities of their Ethernet interface.
+
+Android 14 limited EthernetManager.updateConfiguration() with capabilities to automotive
+devices and to a single Ethernet transport (needed for the interface specifier).
+Windows Subsystem for Android mirrors the host network into eth0 (metered, roaming,
+Wi-Fi transport for app compatibility), which Android 13 allowed. Restore that for
+devices with FEATURE_PC; such a request gets no interface specifier.
+
+diff --git a/service-t/src/com/android/server/ethernet/EthernetServiceImpl.java b/service-t/src/com/android/server/ethernet/EthernetServiceImpl.java
+index b8689d6..44c379e 100644
+--- a/service-t/src/com/android/server/ethernet/EthernetServiceImpl.java
++++ b/service-t/src/com/android/server/ethernet/EthernetServiceImpl.java
+@@ -18,6 +18,7 @@ package com.android.server.ethernet;
+ 
+ import static android.net.NetworkCapabilities.TRANSPORT_ETHERNET;
+ import static android.net.NetworkCapabilities.TRANSPORT_TEST;
++import static android.net.NetworkCapabilities.TRANSPORT_WIFI;
+ 
+ import android.annotation.CheckResult;
+ import android.annotation.NonNull;
+@@ -68,6 +69,15 @@ public class EthernetServiceImpl extends IEthernetManager.Stub {
+         mTracker = tracker;
+     }
+ 
++    /**
++     * PC hosts that run Android in a VM (Windows Subsystem for Android) mirror the host's
++     * network state (metered, roaming, Wi-Fi) into the capabilities of their single
++     * Ethernet interface, as Android 13 allowed for every device.
++     */
++    private boolean isPcDevice() {
++        return mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_PC);
++    }
++
+     private void enforceAutomotiveDevice(final @NonNull String methodName) {
+         PermissionUtils.enforceSystemFeature(mContext, PackageManager.FEATURE_AUTOMOTIVE,
+                 methodName + " is only available on automotive devices.");
+@@ -217,6 +227,11 @@ public class EthernetServiceImpl extends IEthernetManager.Stub {
+     private void validateOrSetNetworkSpecifier(String iface, NetworkCapabilities nc) {
+         final NetworkSpecifier spec = nc.getNetworkSpecifier();
+         if (spec == null) {
++            // A specifier requires a single transport. PC hosts may add Wi-Fi to the
++            // transports of their only Ethernet interface (see isPcDevice()).
++            if (nc.getTransportTypes().length > 1 && isPcDevice()) {
++                return;
++            }
+             nc.setNetworkSpecifier(new EthernetNetworkSpecifier(iface));
+             return;
+         }
+@@ -242,7 +257,10 @@ public class EthernetServiceImpl extends IEthernetManager.Stub {
+         if (mTracker.isValidTestInterface(iface)) {
+             return;
+         }
+-        if (!nc.hasSingleTransport(TRANSPORT_ETHERNET)) {
++        final boolean pcHostTransports = isPcDevice()
++                && nc.getTransportTypes().length == 2
++                && nc.hasTransport(TRANSPORT_ETHERNET) && nc.hasTransport(TRANSPORT_WIFI);
++        if (!nc.hasSingleTransport(TRANSPORT_ETHERNET) && !pcHostTransports) {
+             throw new IllegalArgumentException("Invalid transport type for request.");
+         }
+     }
+@@ -253,7 +271,7 @@ public class EthernetServiceImpl extends IEthernetManager.Stub {
+             enforceManageTestNetworksPermission();
+         } else {
+             enforceNetworkManagementPermission();
+-            if (enforceAutomotive) {
++            if (enforceAutomotive && !isPcDevice()) {
+                 enforceAutomotiveDevice(logMessage);
+             }
+         }

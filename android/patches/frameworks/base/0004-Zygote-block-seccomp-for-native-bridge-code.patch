@@ -1,0 +1,76 @@
+diff --git a/core/jni/com_android_internal_os_Zygote.cpp b/core/jni/com_android_internal_os_Zygote.cpp
+index aeaeeca3e..a38001d29 100644
+--- a/core/jni/com_android_internal_os_Zygote.cpp
++++ b/core/jni/com_android_internal_os_Zygote.cpp
+@@ -46,7 +46,11 @@
+ #include <sys/eventfd.h>
+ #include <sys/mount.h>
+ #include <sys/personality.h>
++#include <linux/audit.h>
++#include <linux/filter.h>
++#include <linux/seccomp.h>
+ #include <sys/prctl.h>
++#include <sys/syscall.h>
+ #include <sys/resource.h>
+ #include <sys/socket.h>
+ #include <sys/stat.h>
+@@ -654,6 +658,42 @@ static void SetUpSeccompFilter(uid_t uid, bool is_child_zygote) {
+   }
+ }
+ 
++// Guest code run through a native bridge cannot install working seccomp filters: its
++// filters check the guest architecture and guest system call numbers, but the kernel sees
++// the host's system calls, so the first call after installation kills the process
++// (Chromium's renderer sandbox does this). Make seccomp(2) and prctl(PR_SET_SECCOMP) fail
++// in such processes, as on a kernel without seccomp, so guest sandboxes skip that layer.
++// The filters installed by SetUpSeccompFilter() stay in force.
++static void BlockSeccompForNativeBridge() {
++#if defined(__x86_64__)
++  constexpr uint32_t kAuditArch = AUDIT_ARCH_X86_64;
++#elif defined(__i386__)
++  constexpr uint32_t kAuditArch = AUDIT_ARCH_I386;
++#elif defined(__aarch64__)
++  constexpr uint32_t kAuditArch = AUDIT_ARCH_AARCH64;
++#elif defined(__arm__)
++  constexpr uint32_t kAuditArch = AUDIT_ARCH_ARM;
++#elif defined(__riscv)
++  constexpr uint32_t kAuditArch = AUDIT_ARCH_RISCV64;
++#endif
++  struct sock_filter filter[] = {
++      BPF_STMT(BPF_LD | BPF_W | BPF_ABS, offsetof(struct seccomp_data, arch)),
++      BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, kAuditArch, 0, 6),
++      BPF_STMT(BPF_LD | BPF_W | BPF_ABS, offsetof(struct seccomp_data, nr)),
++      BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_seccomp, 5, 0),
++      BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_prctl, 0, 3),
++      BPF_STMT(BPF_LD | BPF_W | BPF_ABS, offsetof(struct seccomp_data, args[0])),
++      BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, PR_SET_SECCOMP, 2, 0),
++      BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
++      BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
++      BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ERRNO | (ENOSYS & SECCOMP_RET_DATA)),
++  };
++  struct sock_fprog prog = {static_cast<unsigned short>(sizeof(filter) / sizeof(filter[0])), filter};
++  if (prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog) != 0) {
++    ALOGW("Could not block seccomp for native bridge code: %s", strerror(errno));
++  }
++}
++
+ static void EnableKeepCapabilities(fail_fn_t fail_fn) {
+   if (prctl(PR_SET_KEEPCAPS, 1, 0, 0, 0) == -1) {
+     fail_fn(CREATE_ERROR("prctl(PR_SET_KEEPCAPS) failed: %s", strerror(errno)));
+@@ -2008,6 +2048,16 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids,
+     // breaks SELinux domain transition (see b/71859146).  As the result,
+     // privileged syscalls used below still need to be accessible in app process.
+     SetUpSeccompFilter(uid, is_child_zygote);
++    // Last filter of an app that runs through a native bridge: forked by the zygote for a
++    // guest instruction set, or forked by the app zygote of such an app (the bridge is
++    // initialized there already). A child zygote still installs filters itself and gets
++    // none here; its children install their own app filter first, then this one.
++    if (gIsSecurityEnforced && !is_system_server && !is_child_zygote &&
++        (android::NativeBridgeInitialized() ||
++         (instruction_set.has_value() && android::NativeBridgeAvailable() &&
++          android::NeedsNativeBridge(instruction_set.value().c_str())))) {
++      BlockSeccompForNativeBridge();
++    }
+ 
+     // Must be called before losing the permission to set scheduler policy.
+     SetSchedulerPolicy(fail_fn, is_top_app);

@@ -1,0 +1,16 @@
+# Legacy WSA disk layout with file-based encryption (androidboot.fstab_suffix=1.windows).
+# First-stage init reads this copy from /system/etc before /vendor is mounted.
+# No /cache entry: WSA 2407 (Android 13) mounted tmpfs on a /cache directory, but in Android 15
+# without a cache partition /cache is a symlink to /data/cache. On the first boot /data/cache does
+# not exist yet, so that mount failed, mount_all returned an error, "nonencrypted" was never
+# triggered and class main (installd) did not start: the system server stopped at every first boot.
+# <src>           <mnt_point>             <type>    <mnt_flags and options>                    <fs_mgr_flags>
+SCSI=0:0:0:1      /vendor                 ext4      noatime,ro,errors=panic                    wait,first_stage_mount
+SCSI=0:0:0:2      /system_ext             ext4      noatime,ro,errors=panic                    wait,first_stage_mount
+SCSI=0:0:0:3      /product                ext4      noatime,ro,errors=panic                    wait,first_stage_mount
+SCSI=0:0:0:4      /data                   ext4      nodev,noatime,nosuid,discard,errors=panic  latemount,wait,check,quota,formattable,fileencryption=aes-256-xts,checkpoint=block
+SCSI=0:0:0:5      /metadata               ext4      nodev,noatime,nosuid,errors=panic          first_stage_mount,wait,check,formattable,nofail
+shared_mem        /mnt/shared_mem         virtiofs  nosuid,nodev,noatime,context=u:object_r:system_server_tmpfs:s0,dax defaults
+shared_tmp        /mnt/shared_tmp         virtiofs  nosuid,nodev,noatime,context=u:object_r:media_rw_data_file:s0 defaults
+shared_anr        /data/anr               virtiofs  nosuid,nodev,noatime,context=u:object_r:anr_data_file:s0 defaults
+shared_tombstone  /data/tombstones        virtiofs  nosuid,nodev,noatime,context=u:object_r:tombstone_data_file:s0 defaults

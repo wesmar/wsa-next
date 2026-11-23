@@ -1,0 +1,64 @@
+nativeloader: let an app on a system partition load its own libraries from class loaders it makes.
+
+A class loader that an app creates itself (not through ApplicationLoaders) gets an isolated
+namespace that may load anything under /data and /mnt/expand, so that apps with custom class
+loaders can load their own libraries by absolute path (b/27588281). An app on a read-only system
+partition keeps its libraries in its folder there instead. Chrome makes the class loaders of its
+isolated splits itself; integrated into the image (/product/app/ChromePlay) it crashed at start:
+"library .../ChromePlay.apk!/lib/x86_64/libelements.so ... is not accessible for the namespace"
+(permitted_paths="/data:/mnt/expand"), while its base loaded libchrome.so from the same APK. The
+namespace of such a class loader now also permits the folder of the calling APK when that is an
+app folder on a system partition - the app's own files and nothing else.
+
+diff --git a/libnativeloader/native_loader.cpp b/libnativeloader/native_loader.cpp
+--- a/libnativeloader/native_loader.cpp
++++ b/libnativeloader/native_loader.cpp
+@@ -171,6 +171,20 @@ Result<void*> TryLoadNativeloaderExtraLib(const char* path) {
+         res.ok() ? "ok" : res.error().message().c_str());
+   return res;
+ }
++
++// The folder of an app on a read-only system partition ("/product/app/Chrome") when
++// `location` is one of the app's APKs.
++std::optional<std::string> SystemAppDir(const char* location) {
++  if (location == nullptr) {
++    return std::nullopt;
++  }
++  static const std::regex kAppApk("^(/(system|system_ext|product)/(app|priv-app)/[^/]+)/[^/]+\\.apk$");
++  std::cmatch match;
++  if (!std::regex_match(location, match, kAppApk)) {
++    return std::nullopt;
++  }
++  return match[1].str();
++}
+
+ Result<NativeLoaderNamespace*> CreateClassLoaderNamespaceLocked(JNIEnv* env,
+                                                                 int32_t target_sdk_version,
+@@ -426,16 +440,26 @@ void* OpenNativeLibrary(JNIEnv* env,
+       // This is the case where the classloader was not created by ApplicationLoaders
+       // In this case we create an isolated not-shared namespace for it.
+       const std::string empty_dex_path;
++      // Such a namespace may load anything under /data, so that an app that creates class
++      // loaders for its own code can load its own libraries by absolute path. An app on a
++      // read-only system partition keeps them in its folder there: Chrome, which makes the
++      // class loaders of its isolated splits itself, could not load libelements.so from its
++      // base APK when it was part of the image. That folder is permitted as well.
++      const std::optional<std::string> app_dir = SystemAppDir(caller_location);
++      jstring app_dir_j = app_dir.has_value() ? env->NewStringUTF(app_dir->c_str()) : nullptr;
+       Result<NativeLoaderNamespace*> res =
+           CreateClassLoaderNamespaceLocked(env,
+                                            target_sdk_version,
+                                            class_loader,
+                                            nativeloader::API_DOMAIN_DEFAULT,
+                                            /*is_shared=*/false,
+                                            empty_dex_path,
+                                            library_path_j,
+-                                           /*permitted_path_j=*/nullptr,
++                                           /*permitted_path_j=*/app_dir_j,
+                                            /*uses_library_list_j=*/nullptr);
++      if (app_dir_j != nullptr) {
++        env->DeleteLocalRef(app_dir_j);
++      }
+       if (!res.ok()) {
+         ALOGD("Failed to create isolated ns for %s (caller=%s)",
+               path,

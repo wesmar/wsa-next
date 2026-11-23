@@ -1,0 +1,53 @@
+PackageManager: always send the APK list to package verifiers.
+
+Android 14 set EXTRA_VERIFICATION_ROOT_HASH ("file:roothash;...") only for incremental
+installs. The package verifier of Windows Subsystem for Android finds the APK files to
+scan through it and fails every other install. Send it for all installs, as Android 13
+did; non-incremental files are listed with "0" (they have no fs-verity root hash).
+
+diff --git a/services/core/java/com/android/server/pm/VerifyingSession.java b/services/core/java/com/android/server/pm/VerifyingSession.java
+index 542ae8eb9..ae21c3540 100644
+--- a/services/core/java/com/android/server/pm/VerifyingSession.java
++++ b/services/core/java/com/android/server/pm/VerifyingSession.java
+@@ -266,6 +266,18 @@ final class VerifyingSession {
+     /**
+      * Send a request to verifier(s) to verify the package if necessary.
+      */
++    /** Same format as buildVerificationRootHashString(), with "0" for every root hash. */
++    private static String buildApkListWithoutRootHashes(String baseCodePath,
++            String[] splitCodePaths) {
++        final StringBuilder sb = new StringBuilder(new File(baseCodePath).getName()).append(":0");
++        if (splitCodePaths != null) {
++            for (int i = splitCodePaths.length - 1; i >= 0; i--) {
++                sb.append(';').append(new File(splitCodePaths[i]).getName()).append(":0");
++            }
++        }
++        return sb.toString();
++    }
++
+     private void sendPackageVerificationRequest(
+             int verificationId,
+             PackageInfoLite pkgLite,
+@@ -378,14 +390,14 @@ final class VerifyingSession {
+         final String baseCodePath = mPackageLite.getBaseApkPath();
+         final String[] splitCodePaths = mPackageLite.getSplitApkPaths();
+ 
+-        final String rootHashString;
+-        if (IncrementalManager.isIncrementalPath(baseCodePath)) {
+-            rootHashString = PackageManagerServiceUtils.buildVerificationRootHashString(
+-                    baseCodePath, splitCodePaths);
+-            verification.putExtra(PackageManager.EXTRA_VERIFICATION_ROOT_HASH, rootHashString);
+-        } else {
+-            rootHashString = null;
+-        }
++        // Always list the APK files as Android 13 did ("file:roothash;..."): package verifiers
++        // such as the one of Windows Subsystem for Android find the files to scan through
++        // this extra. Only incremental installs have fs-verity root hashes.
++        final String rootHashString = IncrementalManager.isIncrementalPath(baseCodePath)
++                ? PackageManagerServiceUtils.buildVerificationRootHashString(
++                        baseCodePath, splitCodePaths)
++                : buildApkListWithoutRootHashes(baseCodePath, splitCodePaths);
++        verification.putExtra(PackageManager.EXTRA_VERIFICATION_ROOT_HASH, rootHashString);
+ 
+         verification.putExtra(PackageInstaller.EXTRA_DATA_LOADER_TYPE, mDataLoaderType);
+ 

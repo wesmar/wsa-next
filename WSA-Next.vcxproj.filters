@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Application"><UniqueIdentifier>{fdd0a87a-282f-4294-bcc0-f410a5d21ae0}</UniqueIdentifier></Filter>
+    <Filter Include="Core"><UniqueIdentifier>{6d342554-a422-4df3-b64e-ffe25212229f}</UniqueIdentifier></Filter>
+    <Filter Include="GUI"><UniqueIdentifier>{f9e817a0-1355-4cfc-94fc-b6f24b757360}</UniqueIdentifier></Filter>
+    <Filter Include="Install"><UniqueIdentifier>{8eafce7b-f9cc-4e54-8df7-e2185d88d71d}</UniqueIdentifier></Filter>
+    <Filter Include="Network"><UniqueIdentifier>{92f3ee68-23b1-44bd-8cc3-a319ba813c5d}</UniqueIdentifier></Filter>
+    <Filter Include="Resources"><UniqueIdentifier>{26cf8b12-356f-49a7-92ea-c137838f0d57}</UniqueIdentifier></Filter>
+    <Filter Include="Support"><UniqueIdentifier>{cb6b0065-156c-4539-92e9-7d8dc1ed878a}</UniqueIdentifier></Filter>
+    <Filter Include="Third party"><UniqueIdentifier>{418dbd20-01ca-41dc-b52d-cf3156d02498}</UniqueIdentifier></Filter>
+    <Filter Include="Bluetooth"><UniqueIdentifier>{6f0c2a8e-91d4-4b5e-a3c7-2e8d5b1f4a90}</UniqueIdentifier></Filter>
+    <Filter Include="Biometrics"><UniqueIdentifier>{a3d4e5f6-1b2c-4d3e-8f90-0a1b2c3d4e5f}</UniqueIdentifier></Filter>
+    <Filter Include="Host"><UniqueIdentifier>{b7c8d9e0-2f3a-4b5c-9d6e-1f2a3b4c5d6e}</UniqueIdentifier></Filter>
+    <Filter Include="Telephony"><UniqueIdentifier>{c4e1f7a2-3b5d-4e6f-8a9b-2c3d4e5f6a7b}</UniqueIdentifier></Filter>
+    <Filter Include="Resources\Languages"><UniqueIdentifier>{5af5768d-41da-4467-b656-502a2008968b}</UniqueIdentifier></Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\app\Cli.cpp"><Filter>Application</Filter></ClCompile>
+    <ClCompile Include="src\app\Console.cpp"><Filter>Application</Filter></ClCompile>
+    <ClCompile Include="src\app\SetupActions.cpp"><Filter>Application</Filter></ClCompile>
+    <ClCompile Include="src\install\Setup.cpp"><Filter>Install</Filter></ClCompile>
+    <ClCompile Include="src\app\main.cpp"><Filter>Application</Filter></ClCompile>
+    <ClCompile Include="src\core\Install.cpp"><Filter>Core</Filter></ClCompile>
+    <ClCompile Include="src\core\Manifest.cpp"><Filter>Core</Filter></ClCompile>
+    <ClCompile Include="src\core\System.cpp"><Filter>Core</Filter></ClCompile>
+    <ClCompile Include="src\core\Uninstall.cpp"><Filter>Core</Filter></ClCompile>
+    <ClCompile Include="src\core\Release.cpp"><Filter>Core</Filter></ClCompile>
+    <ClCompile Include="src\gui\Dialogs.cpp"><Filter>GUI</Filter></ClCompile>
+    <ClCompile Include="src\gui\MainWindow.cpp"><Filter>GUI</Filter></ClCompile>
+    <ClCompile Include="src\gui\MainWindowCommands.cpp"><Filter>GUI</Filter></ClCompile>
+    <ClCompile Include="src\gui\MainWindowLayout.cpp"><Filter>GUI</Filter></ClCompile>
+    <ClCompile Include="src\gui\MainWindowMenus.cpp"><Filter>GUI</Filter></ClCompile>
+    <ClCompile Include="src\gui\MainWindowState.cpp"><Filter>GUI</Filter></ClCompile>
+    <ClCompile Include="src\gui\Menus.cpp"><Filter>GUI</Filter></ClCompile>
+    <ClCompile Include="src\gui\Theme.cpp"><Filter>GUI</Filter></ClCompile>
+    <ClCompile Include="src\gui\Widgets.cpp"><Filter>GUI</Filter></ClCompile>
+    <ClCompile Include="src\install\Package.cpp"><Filter>Install</Filter></ClCompile>
+    <ClCompile Include="src\install\Traces.cpp"><Filter>Install</Filter></ClCompile>
+    <ClCompile Include="src\install\Unpack.cpp"><Filter>Install</Filter></ClCompile>
+    <ClCompile Include="src\net\Downloader.cpp"><Filter>Network</Filter></ClCompile>
+    <ClCompile Include="src\support\Browser.cpp"><Filter>Support</Filter></ClCompile>
+    <ClCompile Include="src\support\Common.cpp"><Filter>Support</Filter></ClCompile>
+    <ClCompile Include="src\support\Json.cpp"><Filter>Support</Filter></ClCompile>
+    <ClCompile Include="src\support\Settings.cpp"><Filter>Support</Filter></ClCompile>
+    <ClCompile Include="src\support\Sha256.cpp"><Filter>Support</Filter></ClCompile>
+    <ClCompile Include="src\support\Text.cpp"><Filter>Support</Filter></ClCompile>
+    <ClCompile Include="src\support\Wmi.cpp"><Filter>Support</Filter></ClCompile>
+    <ClCompile Include="third_party\zstd\zstddeclib.c"><Filter>Third party</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\app\Cli.h"><Filter>Application</Filter></ClInclude>
+    <ClInclude Include="src\app\SetupActions.h"><Filter>Application</Filter></ClInclude>
+    <ClInclude Include="src\install\Setup.h"><Filter>Install</Filter></ClInclude>
+    <ClInclude Include="src\app\Console.h"><Filter>Application</Filter></ClInclude>
+    <ClInclude Include="src\core\Install.h"><Filter>Core</Filter></ClInclude>
+    <ClInclude Include="src\core\Manifest.h"><Filter>Core</Filter></ClInclude>
+    <ClInclude Include="src\core\System.h"><Filter>Core</Filter></ClInclude>
+    <ClInclude Include="src\core\Uninstall.h"><Filter>Core</Filter></ClInclude>
+    <ClInclude Include="src\core\Release.h"><Filter>Core</Filter></ClInclude>
+    <ClInclude Include="src\gui\Dialogs.h"><Filter>GUI</Filter></ClInclude>
+    <ClInclude Include="src\gui\MainWindow.h"><Filter>GUI</Filter></ClInclude>
+    <ClInclude Include="src\gui\MainWindowDetail.h"><Filter>GUI</Filter></ClInclude>
+    <ClInclude Include="src\gui\Menus.h"><Filter>GUI</Filter></ClInclude>
+    <ClInclude Include="src\gui\Theme.h"><Filter>GUI</Filter></ClInclude>
+    <ClInclude Include="src\gui\Widgets.h"><Filter>GUI</Filter></ClInclude>
+    <ClInclude Include="src\install\Package.h"><Filter>Install</Filter></ClInclude>
+    <ClInclude Include="src\install\Traces.h"><Filter>Install</Filter></ClInclude>
+    <ClInclude Include="src\install\Unpack.h"><Filter>Install</Filter></ClInclude>
+    <ClInclude Include="src\net\Downloader.h"><Filter>Network</Filter></ClInclude>
+    <ClInclude Include="src\resources\resource.h"><Filter>Resources</Filter></ClInclude>
+    <ClInclude Include="src\support\Browser.h"><Filter>Support</Filter></ClInclude>
+    <ClInclude Include="src\support\Common.h"><Filter>Support</Filter></ClInclude>
+    <ClInclude Include="src\support\Config.h"><Filter>Support</Filter></ClInclude>
+    <ClInclude Include="src\support\Handle.h"><Filter>Support</Filter></ClInclude>
+    <ClInclude Include="src\support\Json.h"><Filter>Support</Filter></ClInclude>
+    <ClInclude Include="src\support\Settings.h"><Filter>Support</Filter></ClInclude>
+    <ClInclude Include="src\support\Sha256.h"><Filter>Support</Filter></ClInclude>
+    <ClInclude Include="src\support\Text.h"><Filter>Support</Filter></ClInclude>
+    <ClInclude Include="src\support\Wmi.h"><Filter>Support</Filter></ClInclude>
+    <ClInclude Include="third_party\zstd\zstd.h"><Filter>Third party</Filter></ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src\resources\app.rc"><Filter>Resources</Filter></ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\resources\lang\en.rc"><Filter>Resources</Filter></None>
+    <None Include="src\resources\app.manifest"><Filter>Resources</Filter></None>
+    <None Include="src\bluetooth\Opcodes.inc"><Filter>Bluetooth</Filter></None>
+    <None Include="src\bluetooth\README.md"><Filter>Bluetooth</Filter></None>
+    <ClCompile Include="src\bluetooth\Bridge.cpp"><Filter>Bluetooth</Filter></ClCompile>
+    <ClCompile Include="src\bluetooth\Controller.cpp"><Filter>Bluetooth</Filter></ClCompile>
+    <ClCompile Include="src\bluetooth\Crypto.cpp"><Filter>Bluetooth</Filter></ClCompile>
+    <ClInclude Include="src\bluetooth\Crypto.h"><Filter>Bluetooth</Filter></ClInclude>
+    <ClCompile Include="src\bluetooth\H4.cpp"><Filter>Bluetooth</Filter></ClCompile>
+    <ClCompile Include="src\bluetooth\Hci.cpp"><Filter>Bluetooth</Filter></ClCompile>
+    <ClCompile Include="src\host\Guest.cpp"><Filter>Host</Filter></ClCompile>
+    <ClCompile Include="src\bluetooth\L2cap.cpp"><Filter>Bluetooth</Filter></ClCompile>
+    <ClCompile Include="src\bluetooth\LeLink.cpp"><Filter>Bluetooth</Filter></ClCompile>
+    <ClInclude Include="src\bluetooth\L2cap.h"><Filter>Bluetooth</Filter></ClInclude>
+    <ClInclude Include="src\bluetooth\LeLink.h"><Filter>Bluetooth</Filter></ClInclude>
+    <ClCompile Include="src\bluetooth\Log.cpp"><Filter>Bluetooth</Filter></ClCompile>
+    <ClCompile Include="src\bluetooth\Scanner.cpp"><Filter>Bluetooth</Filter></ClCompile>
+    <ClCompile Include="src\host\Host.cpp"><Filter>Host</Filter></ClCompile>
+    <ClInclude Include="src\host\Host.h"><Filter>Host</Filter></ClInclude>
+    <ClCompile Include="src\host\Registration.cpp"><Filter>Host</Filter></ClCompile>
+    <ClCompile Include="src\host\Tray.cpp"><Filter>Host</Filter></ClCompile>
+    <ClInclude Include="src\host\Registration.h"><Filter>Host</Filter></ClInclude>
+    <ClInclude Include="src\host\Tray.h"><Filter>Host</Filter></ClInclude>
+    <ClCompile Include="src\biometrics\ElevationBridge.cpp"><Filter>Biometrics</Filter></ClCompile>
+    <ClCompile Include="src\biometrics\HelloBridge.cpp"><Filter>Biometrics</Filter></ClCompile>
+    <ClCompile Include="src\biometrics\WindowsHello.cpp"><Filter>Biometrics</Filter></ClCompile>
+    <ClInclude Include="src\biometrics\ElevationBridge.h"><Filter>Biometrics</Filter></ClInclude>
+    <ClInclude Include="src\biometrics\ElevationProtocol.h"><Filter>Biometrics</Filter></ClInclude>
+    <ClInclude Include="src\biometrics\HelloBridge.h"><Filter>Biometrics</Filter></ClInclude>
+    <ClInclude Include="src\biometrics\Protocol.h"><Filter>Biometrics</Filter></ClInclude>
+    <ClInclude Include="src\biometrics\WindowsHello.h"><Filter>Biometrics</Filter></ClInclude>
+    <ClCompile Include="src\telephony\AtModem.cpp"><Filter>Telephony</Filter></ClCompile>
+    <ClCompile Include="src\telephony\Modem.cpp"><Filter>Telephony</Filter></ClCompile>
+    <ClCompile Include="src\telephony\MmsRelay.cpp"><Filter>Telephony</Filter></ClCompile>
+    <ClCompile Include="src\telephony\ModemBridge.cpp"><Filter>Telephony</Filter></ClCompile>
+    <ClCompile Include="src\telephony\SimCard.cpp"><Filter>Telephony</Filter></ClCompile>
+    <ClInclude Include="src\telephony\AtModem.h"><Filter>Telephony</Filter></ClInclude>
+    <ClInclude Include="src\telephony\Modem.h"><Filter>Telephony</Filter></ClInclude>
+    <ClInclude Include="src\telephony\MmsRelay.h"><Filter>Telephony</Filter></ClInclude>
+    <ClInclude Include="src\telephony\ModemBridge.h"><Filter>Telephony</Filter></ClInclude>
+    <ClInclude Include="src\telephony\Protocol.h"><Filter>Telephony</Filter></ClInclude>
+    <ClInclude Include="src\telephony\SimCard.h"><Filter>Telephony</Filter></ClInclude>    <ClInclude Include="src\bluetooth\Bridge.h"><Filter>Bluetooth</Filter></ClInclude>
+    <ClInclude Include="src\bluetooth\Bytes.h"><Filter>Bluetooth</Filter></ClInclude>
+    <ClInclude Include="src\bluetooth\Controller.h"><Filter>Bluetooth</Filter></ClInclude>
+    <ClInclude Include="src\bluetooth\H4.h"><Filter>Bluetooth</Filter></ClInclude>
+    <ClInclude Include="src\bluetooth\Hci.h"><Filter>Bluetooth</Filter></ClInclude>
+    <ClInclude Include="src\host\Guest.h"><Filter>Host</Filter></ClInclude>
+    <ClInclude Include="src\support\HostEvents.h"><Filter>Support</Filter></ClInclude>
+    <ClCompile Include="src\support\Signature.cpp"><Filter>Support</Filter></ClCompile>
+    <ClInclude Include="src\support\Signature.h"><Filter>Support</Filter></ClInclude>
+    <ClInclude Include="src\bluetooth\Log.h"><Filter>Bluetooth</Filter></ClInclude>
+    <ClInclude Include="src\bluetooth\Scanner.h"><Filter>Bluetooth</Filter></ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="src\resources\icon.ico"><Filter>Resources</Filter></Image>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="src\resources\language\ar.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\cs.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\de.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\es.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\fa.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\fr.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\hi.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\id.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\it.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\ja.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\ko.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\nl.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\pl.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\pt.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\ru.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\tr.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\uk.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\vi.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\zh-cn.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+    <CopyFileToFolders Include="src\resources\language\zh-tw.lng"><Filter>Resources\Languages</Filter></CopyFileToFolders>
+  </ItemGroup>
+</Project>

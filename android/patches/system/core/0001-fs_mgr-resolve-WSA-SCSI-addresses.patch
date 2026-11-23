@@ -1,0 +1,45 @@
+--- a/fs_mgr/libfstab/fstab.cpp	2026-11-17 23:54:19.424229500 +0100
++++ b/fs_mgr/libfstab/fstab.cpp	2026-11-17 23:54:19.565736400 +0100
+@@ -572,6 +572,32 @@
+     return "";
+ }
+ 
++// Windows Subsystem for Android names its disks in the fstab by SCSI address
++// ("SCSI=<host>:<channel>:<target>:<lun>"): the address is stable across boots while
++// the sdX enumeration order is not. Resolve such entries through sysfs to the block node.
++static void ResolveScsiAddress(std::string* blk_device) {
++    static constexpr char kPrefix[] = "SCSI=";
++    if (!android::base::StartsWith(*blk_device, kPrefix)) {
++        return;
++    }
++    const std::string address = blk_device->substr(sizeof(kPrefix) - 1);
++    const std::string block_dir = "/sys/bus/scsi/devices/" + address + "/block";
++    std::unique_ptr<DIR, decltype(&closedir)> dir(opendir(block_dir.c_str()), closedir);
++    if (!dir) {
++        PERROR << "Failed to resolve SCSI address " << address;
++        return;
++    }
++    while (const struct dirent* entry = readdir(dir.get())) {
++        if (entry->d_name[0] == '.') {
++            continue;
++        }
++        *blk_device = std::string("/dev/block/") + entry->d_name;
++        LINFO << "Resolved SCSI address " << address << " to " << *blk_device;
++        return;
++    }
++    LERROR << "Failed to resolve SCSI address " << address << ": no block device";
++}
++
+ bool ParseFstabFromString(const std::string& fstab_str, bool proc_mounts, Fstab* fstab_out) {
+     const int expected_fields = proc_mounts ? 4 : 5;
+ 
+@@ -595,6 +621,9 @@
+         auto it = fields.begin();
+ 
+         entry.blk_device = std::move(*it++);
++        if (!proc_mounts) {
++            ResolveScsiAddress(&entry.blk_device);
++        }
+         entry.mount_point = std::move(*it++);
+         entry.fs_type = std::move(*it++);
+         ParseMountFlags(std::move(*it++), &entry);

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App data backup on by default (to the Google account on the Google Play variant).
+         WSA 2407 had no backup service at all. -->
+    <bool name="def_backup_enabled">true</bool>
+</resources>

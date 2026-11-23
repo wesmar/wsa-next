@@ -1,0 +1,49 @@
+From: WSA-Next <dev@kvc.pl>
+Date: Sun, 22 Nov 2026 15:06:00 +0100
+Subject: [PATCH] rild: allow explicit -l library without ro.boot.modem_simulator_ports
+
+WSA-Next passes -l /system_ext/lib64/libcuttlefish-ril-2.so -- -L 0x5753524C
+in wsa-ril.rc and does not set Cuttlefish's ro.boot.modem_simulator_ports
+kernel property. Previously rild_cuttlefish.c jumped straight to done when
+ro.boot.modem_simulator_ports was empty, skipping dlopen/RIL_Init/RIL_register.
+Also copy -- library arguments into newArgv before appending -c <clientId> so
+argv is never written past its NULL terminator.
+diff --git a/guest/hals/rild/rild_cuttlefish.c b/guest/hals/rild/rild_cuttlefish.c
+index 49f34ec..7634e06 100644
+--- a/guest/hals/rild/rild_cuttlefish.c
++++ b/guest/hals/rild/rild_cuttlefish.c
+@@ -149,8 +149,10 @@ int main(int argc, char **argv) {
+ 
+     property_get("ro.boot.modem_simulator_ports", port, "");
+     if (strcmp(port, "") == 0) {
+-      // Assume "no-ril" case.
+-      goto done;
++      if (rilLibPath == NULL) {
++        // Assume "no-ril" case.
++        goto done;
++      }
+     } else {
+       rilLibPath = "libcuttlefish-ril-2.so";
+     }
+@@ -184,11 +186,18 @@ int main(int argc, char **argv) {
+         RLOGW("RIL_SAP_Init defined as null in %s. SAP Not usable\n", rilLibPath);
+     }
+ 
++    static char * newArgv[MAX_LIB_ARGS];
+     if (hasLibArgs) {
+-        rilArgv = argv + i - 1;
+-        argc = argc -i + 1;
++        int libArgc = argc - i;
++        if (libArgc + 5 > MAX_LIB_ARGS) {
++            libArgc = MAX_LIB_ARGS - 5;
++        }
++        rilArgv = newArgv;
++        for (int j = 0; j < libArgc; j++) {
++            rilArgv[j + 1] = argv[i + j];
++        }
++        argc = libArgc + 1;
+     } else {
+-        static char * newArgv[MAX_LIB_ARGS];
+         static char args[PROPERTY_VALUE_MAX];
+         rilArgv = newArgv;
+         property_get(LIB_ARGS_PROPERTY, args, "");

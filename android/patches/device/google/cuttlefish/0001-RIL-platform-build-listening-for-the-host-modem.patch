@@ -1,0 +1,207 @@
+From: WSA-Next <dev@kvc.pl>
+Date: Sun, 22 Nov 2026 13:30:00 +0100
+Subject: [PATCH] RIL: platform build listening for the host modem
+
+WSA-Next runs this RIL as a platform (system_ext) HAL: the modem is on the
+Windows host, which connects to the RIL over a Hyper-V socket when it serves
+one. reference-ril gets -L <vsock port> (listen and accept the host),
+libril-modem-lib, libcuttlefish-ril-2 and libcuttlefish-rild become
+system_ext modules (the device provides the init script and the VINTF
+manifest), and base64 comes from BoringSSL instead of libcuttlefish_utils.
+libcuttlefish-ril-2 is 64-bit only: the 64-bit rild is its only user, and
+generic_system does not allow 32-bit radio libraries in /system/lib.
+
+diff --git a/guest/hals/ril/reference-libril/Android.bp b/guest/hals/ril/reference-libril/Android.bp
+index 0ff8dfc..fc8c71b 100644
+--- a/guest/hals/ril/reference-libril/Android.bp
++++ b/guest/hals/ril/reference-libril/Android.bp
+@@ -19,7 +19,8 @@ package {
+ cc_library {
+     name: "libril-modem-lib",
+     defaults: ["android.hardware.radio-library.aidl_deps"],
+-    vendor: true,
++    // WSA-Next: platform (system_ext) RIL.
++    system_ext_specific: true,
+     cflags: [
+         "-Wextra",
+         "-Wno-unused-parameter",
+diff --git a/guest/hals/ril/reference-ril/Android.bp b/guest/hals/ril/reference-ril/Android.bp
+index c0f7df4..13f5953 100644
+--- a/guest/hals/ril/reference-ril/Android.bp
++++ b/guest/hals/ril/reference-ril/Android.bp
+@@ -33,7 +33,10 @@ license {
+
+ cc_library {
+     name: "libcuttlefish-ril-2",
+-    vendor: true,
++    // WSA-Next: a platform (system_ext) RIL; the modem is on the Windows host.
++    system_ext_specific: true,
++    // Loaded by the 64-bit rild only: no 32-bit copy (and none of its radio libraries) in /system.
++    compile_multilib: "64",
+     cflags: [
+         "-DCUTTLEFISH_ENABLE",
+         "-DRIL_SHLIB",
+@@ -56,9 +59,8 @@ cc_library {
+     ],
+     shared_libs: [
+         "libbase",
++        "libcrypto",
+         "libcutils",
+-        "libcuttlefish_fs",
+-        "libcuttlefish_utils",
+         "liblog",
+         "libril-modem-lib",
+         "librilutils",
+diff --git a/guest/hals/ril/reference-ril/base64util.cpp b/guest/hals/ril/reference-ril/base64util.cpp
+index c75e80e..d337d07 100644
+--- a/guest/hals/ril/reference-ril/base64util.cpp
++++ b/guest/hals/ril/reference-ril/base64util.cpp
+@@ -17,10 +17,16 @@
+ 
+ #include "base64util.h"
+ 
++#include <string.h>
++
++#include <string>
+ #include <vector>
+ 
+-#include "common/libs/utils/base64.h"
++#include <openssl/base64.h>
+ 
++// WSA-Next: BoringSSL's base64 instead of libcuttlefish_utils, which a platform build of this
++// RIL would otherwise pull in with all its dependencies. Same behaviour: the decoded bytes and
++// the encoded text are copied without a terminator.
+ extern "C" {
+ 
+ int base64_decode(const char *base64input, unsigned char *bindata) {
+@@ -28,15 +34,19 @@ int base64_decode(const char *base64input, unsigned char *bindata) {
+     return 0;
+   }
+ 
+-  std::vector<uint8_t> output;
+-  std::string input(base64input);
+-  bool success = cuttlefish::DecodeBase64(input, &output);
+-  if (!success) {
++  const size_t length = strlen(base64input);
++  size_t maxOut = 0;
++  if (!EVP_DecodedLength(&maxOut, length)) {
++    return 0;
++  }
++  std::vector<uint8_t> output(maxOut);
++  size_t outLength = 0;
++  if (!EVP_DecodeBase64(output.data(), &outLength, output.size(),
++                        reinterpret_cast<const uint8_t *>(base64input), length)) {
+     return 0;
+   }
+-  memcpy(bindata, reinterpret_cast<unsigned char *>(output.data()),
+-         output.size());
+-  return output.size();
++  memcpy(bindata, output.data(), outLength);
++  return static_cast<int>(outLength);
+ }
+ 
+ char *base64_encode(const unsigned char *bindata, char *base64output,
+@@ -45,15 +55,14 @@ char *base64_encode(const unsigned char *bindata, char *base64output,
+     return NULL;
+   }
+ 
+-  std::string output;
+-  bool success = cuttlefish::EncodeBase64(
+-      bindata, static_cast<size_t>(binlength), &output);
+-
+-  if (!success) {
++  size_t encodedLength = 0;
++  if (!EVP_EncodedLength(&encodedLength, static_cast<size_t>(binlength))) {
+     return NULL;
+   }
+-
+-  memcpy(base64output, output.data(), output.size());
++  std::string output(encodedLength, '\0');  // includes room for the terminator
++  const size_t written = EVP_EncodeBlock(reinterpret_cast<uint8_t *>(output.data()), bindata,
++                                         static_cast<size_t>(binlength));
++  memcpy(base64output, output.data(), written);
+   return base64output;
+ }
+ }
+diff --git a/guest/hals/ril/reference-ril/reference-ril.c b/guest/hals/ril/reference-ril/reference-ril.c
+index c96365b..8d52a04 100644
+--- a/guest/hals/ril/reference-ril/reference-ril.c
++++ b/guest/hals/ril/reference-ril/reference-ril.c
+@@ -333,6 +333,9 @@ static int s_port = -1;
+ static const char * s_device_path = NULL;
+ static int          s_device_socket = 0;
+ static uint32_t s_modem_simulator_port = -1;
++/* WSA-Next: -L <vsock port>: listen and let the host (Windows) connect when it has a modem. */
++static int s_listen_port = -1;
++static int s_listen_fd = -1;
+ 
+ /* trigger change to this with s_state_cond */
+ static int s_closed = 0;
+@@ -6353,7 +6356,27 @@ mainLoop(void *param __unused)
+     for (;;) {
+         fd = -1;
+         while  (fd < 0) {
+-            if (isInEmulator()) {
++            if (s_listen_port >= 0) {
++                /* The host connects when it serves a modem; accept waits for it. */
++                if (s_listen_fd < 0) {
++                    struct sockaddr_vm sa;
++                    memset(&sa, 0, sizeof(sa));
++                    sa.svm_family = AF_VSOCK;
++                    sa.svm_cid = VMADDR_CID_ANY;
++                    sa.svm_port = (unsigned int)s_listen_port;
++                    s_listen_fd = socket(AF_VSOCK, SOCK_STREAM | SOCK_CLOEXEC, 0);
++                    if (s_listen_fd < 0 || bind(s_listen_fd, (struct sockaddr *)&sa, sizeof(sa)) < 0 ||
++                        listen(s_listen_fd, 1) < 0) {
++                        RLOGE("Can't listen on vsock port 0x%08x: %s", s_listen_port, strerror(errno));
++                        if (s_listen_fd >= 0) close(s_listen_fd);
++                        s_listen_fd = -1;
++                    }
++                }
++                if (s_listen_fd >= 0) {
++                    fd = TEMP_FAILURE_RETRY(accept4(s_listen_fd, NULL, NULL, SOCK_CLOEXEC));
++                    if (fd >= 0) RLOGI("The host modem connected");
++                }
++            } else if (isInEmulator()) {
+                 fd = qemu_open_modem_port();
+                 RLOGD("opening qemu_modem_port %d!", fd);
+             } else if (s_port > 0) {
+@@ -6432,8 +6455,13 @@ const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **a
+     s_rilenv = env;
+ 
+     RLOGD("RIL_Init");
+-    while ( -1 != (opt = getopt(argc, argv, "p:d:s:c:m:"))) {
++    while ( -1 != (opt = getopt(argc, argv, "p:d:s:c:m:L:"))) {
+         switch (opt) {
++            case 'L':
++                s_listen_port = (int)strtoul(optarg, NULL, 0);
++                RLOGI("Listening for the host modem on vsock port 0x%08x\n", s_listen_port);
++            break;
++
+             case 'p':
+                 s_port = atoi(optarg);
+                 if (s_port == 0) {
+diff --git a/guest/hals/rild/Android.bp b/guest/hals/rild/Android.bp
+index 95dd92d..9e47b27 100644
+--- a/guest/hals/rild/Android.bp
++++ b/guest/hals/rild/Android.bp
+@@ -18,7 +18,9 @@ package {
+ 
+ cc_binary {
+     name: "libcuttlefish-rild",
+-    vendor: true,
++    // WSA-Next: platform (system_ext) RIL daemon; its init script and VINTF manifest come from
++    // the device (device/wsa/wsa_x86_64/telephony).
++    system_ext_specific: true,
+     cflags: [
+         "-DRIL_SHLIB",
+         "-Wall",
+@@ -38,8 +40,6 @@ cc_binary {
+         "liblog",
+         "libril-modem-lib",
+     ],
+-    init_rc: ["rild_cuttlefish.rc"],
+-    vintf_fragments: [":libril-modem-lib-manifests"],
+     relative_install_path: "hw",
+     overrides: ["rild"],
+ }

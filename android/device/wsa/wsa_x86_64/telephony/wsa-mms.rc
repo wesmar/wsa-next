@@ -1,0 +1,8 @@
+# WSA-Next © 2026 Marek Wesołowski - wesmar
+# MMS through the PC's modem: MmsService (the phone's uid) connects to /dev/socket/wsa_mms, and
+# WSA-Next on Windows to vsock port 0x57534D4D ("WSMM"); the daemon joins them.
+service wsa-mms /system_ext/bin/wsa-mms
+    class main
+    user radio
+    group radio
+    socket wsa_mms stream 0660 radio radio

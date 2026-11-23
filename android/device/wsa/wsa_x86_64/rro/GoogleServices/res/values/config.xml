@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WSA-Next © 2026 Marek Wesołowski - wesmar -->
+<resources>
+    <!-- Google Play services is the system activity recognizer, as on phones with Google's
+         apps: the role grants it ACTIVITY_RECOGNITION. Without it Play services refuses every
+         step counting registration (its health tracking API answers INTERNAL_ERROR), and apps
+         that do not expect that, such as Samsung Health, crash and restart in a loop. -->
+    <string name="config_systemActivityRecognizer" translatable="false">com.google.android.gms</string>
+</resources>

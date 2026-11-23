@@ -1,0 +1,18 @@
+# WSA-Next © 2026 Marek Wesołowski - wesmar
+# Root for apps, confirmed on Windows with Windows Hello (device/wsa/wsa_x86_64/elevate).
+
+# /dev/wsa/bin: last on everyone's PATH and empty. While "su for root apps" is on in WSA-Next on
+# Windows, the daemon puts the link su -> /system_ext/bin/0 there; /dev is one tmpfs for every
+# process, so apps see it at once and nothing else of the system changes. The PATH is the
+# default one plus that folder (set before zygote and adbd start, which pass it on).
+on init
+    mkdir /dev/wsa 0755 root root
+    mkdir /dev/wsa/bin 0755 root root
+    export PATH /product/bin:/apex/com.android.runtime/bin:/apex/com.android.art/bin:/system_ext/bin:/system/bin:/system/xbin:/odm/bin:/vendor/bin:/vendor/xbin:/dev/wsa/bin
+
+# Root with the daemon's narrow SELinux domain; group package_info reads packages.list.
+service wsa-elevated /system_ext/bin/wsa-elevated
+    class main
+    user root
+    group root package_info
+    socket wsa_elevate stream 0666 root root

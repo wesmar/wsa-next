@@ -1,0 +1,61 @@
+WM Shell: let a host attach the phone PiP menu to any display without a leash.
+
+WSA shows each task in its own Windows window. Its shell attaches the PiP menu as a
+shell-root window tagged with the PiP task id, re-attaches it when the task moves
+to another display, and forwards input from its own input consumer.
+
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/pip/phone/PhonePipMenuController.java b/libs/WindowManager/Shell/src/com/android/wm/shell/pip/phone/PhonePipMenuController.java
+index c7369a3cd..3db159132 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/pip/phone/PhonePipMenuController.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/pip/phone/PhonePipMenuController.java
+@@ -26,6 +26,7 @@ import android.os.Debug;
+ import android.os.Handler;
+ import android.os.RemoteException;
+ import android.util.Size;
++import android.view.Display;
+ import android.view.MotionEvent;
+ import android.view.SurfaceControl;
+ import android.view.View;
+@@ -162,6 +163,15 @@ public class PhonePipMenuController implements PipMenuController {
+     }
+ 
+     void attachPipMenuView() {
++        attachPipMenuView(Display.DEFAULT_DISPLAY);
++    }
++
++    /**
++     * Attaches the menu window to the given display. Hosts that present every task in its own
++     * native window (Windows Subsystem for Android) attach the menu without a PiP leash and
++     * re-attach it when the task moves to another display.
++     */
++    public void attachPipMenuView(int displayId) {
+         // In case detach was not called (e.g. PIP unexpectedly closed)
+         if (mPipMenuView != null) {
+             detachPipMenuView();
+@@ -176,7 +186,7 @@ public class PhonePipMenuController implements PipMenuController {
+                             @Override
+                             public void surfaceCreated(SurfaceControl.Transaction t) {
+                                 final SurfaceControl sc = getSurfaceControl();
+-                                if (sc != null) {
++                                if (sc != null && mLeash != null) {
+                                     t.reparent(sc, mLeash);
+                                     // make menu on top of the surface
+                                     t.setLayer(sc, Integer.MAX_VALUE);
+@@ -200,7 +210,7 @@ public class PhonePipMenuController implements PipMenuController {
+ 
+         mSystemWindows.addView(mPipMenuView,
+                 getPipMenuLayoutParams(mContext, MENU_WINDOW_TITLE, 0 /* width */, 0 /* height */),
+-                0, SHELL_ROOT_LAYER_PIP);
++                displayId, SHELL_ROOT_LAYER_PIP);
+         setShellRootAccessibilityWindow();
+ 
+         // Make sure the initial actions are set
+@@ -540,7 +550,7 @@ public class PhonePipMenuController implements PipMenuController {
+     /**
+      * Handles a pointer event sent from pip input consumer.
+      */
+-    void handlePointerEvent(MotionEvent ev) {
++    public void handlePointerEvent(MotionEvent ev) {
+         if (mPipMenuView == null) {
+             return;
+         }

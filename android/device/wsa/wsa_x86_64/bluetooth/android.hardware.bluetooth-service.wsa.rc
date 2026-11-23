@@ -1,0 +1,6 @@
+# WSA-Next © 2026 Marek Wesołowski - wesmar
+service bluetooth-wsa /system_ext/bin/hw/android.hardware.bluetooth-service.wsa
+    class hal
+    user bluetooth
+    group bluetooth
+    task_profiles HighPerformance

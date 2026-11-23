@@ -1,0 +1,5 @@
+# WSA-Next © 2026 Marek Wesołowski - wesmar
+service fingerprint-wsa /system_ext/bin/hw/android.hardware.biometrics.fingerprint-service.wsa
+    class hal
+    user system
+    group system

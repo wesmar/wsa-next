@@ -1,0 +1,15 @@
+--- a/model/EmulatedVolume.cpp	2026-11-18 00:10:28.798414200 +0100
++++ b/model/EmulatedVolume.cpp	2026-11-18 00:10:28.966158600 +0100
+@@ -478,6 +478,12 @@
+         // All mounts where successful, disable scope guards
+         sdcardfs_guard.Disable();
+         fuse_guard.Disable();
++
++        // Windows Subsystem for Android: the WSA init script waits for the primary user's
++        // emulated storage before it mounts the shared Windows user folders below it.
++        if (getId() == "emulated;0") {
++            android::base::SetProperty("external_storage.emulated_0.mounted", "true");
++        }
+     }
+ 
+     return OK;

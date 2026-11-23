@@ -1,0 +1,8 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Release" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="WSA-Next.vcxproj" Id="f8604f98-93cf-499d-924c-72cc9370e5c3" />
+</Solution>

@@ -1,0 +1,51 @@
+// WSA-Next © 2026 Marek Wesołowski - wesmar
+// Configuration overlays matching WSA 2407 defaults.
+
+runtime_resource_overlay {
+    name: "WsaDocumentsUIOverlay",
+    manifest: "DocumentsUI/AndroidManifest.xml",
+    resource_dirs: ["DocumentsUI/res"],
+    system_ext_specific: true,
+    sdk_version: "current",
+}
+
+runtime_resource_overlay {
+    name: "WsaNetworkStackOverlay",
+    manifest: "NetworkStack/AndroidManifest.xml",
+    resource_dirs: ["NetworkStack/res"],
+    system_ext_specific: true,
+    sdk_version: "current",
+}
+
+runtime_resource_overlay {
+    name: "WsaFrameworkOverlay",
+    manifest: "Framework/AndroidManifest.xml",
+    resource_dirs: ["Framework/res"],
+    system_ext_specific: true,
+    sdk_version: "current",
+}
+
+runtime_resource_overlay {
+    name: "WsaSettingsProviderOverlay",
+    manifest: "SettingsProvider/AndroidManifest.xml",
+    resource_dirs: ["SettingsProvider/res"],
+    system_ext_specific: true,
+    sdk_version: "current",
+}
+
+// Google Play variant only (installed from wsa_x86_64_gapps.mk).
+runtime_resource_overlay {
+    name: "WsaGoogleServicesOverlay",
+    manifest: "GoogleServices/AndroidManifest.xml",
+    resource_dirs: ["GoogleServices/res"],
+    product_specific: true,
+    sdk_version: "current",
+}
+
+runtime_resource_overlay {
+    name: "WsaGoogleWebViewOverlay",
+    manifest: "GoogleWebView/AndroidManifest.xml",
+    resource_dirs: ["GoogleWebView/res"],
+    product_specific: true,
+    sdk_version: "current",
+}

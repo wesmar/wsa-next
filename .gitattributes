@@ -1,0 +1,19 @@
+# Text files are stored with LF and checked out with the platform's line endings,
+# except where a tool needs LF everywhere.
+* text=auto
+
+# Android build files, shell scripts and patches: read by Linux tools (Soong, bash, git apply)
+android/** text eol=lf
+*.sh text eol=lf
+*.patch text eol=lf
+
+# Windows tooling
+*.ps1 text eol=crlf
+*.vcxproj text eol=crlf
+*.filters text eol=crlf
+*.slnx text eol=crlf
+
+# Binary
+*.ico binary
+*.png binary
+*.zst binary

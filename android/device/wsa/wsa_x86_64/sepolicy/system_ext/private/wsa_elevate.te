@@ -1,0 +1,42 @@
+# WSA-Next © 2026 Marek Wesołowski - wesmar
+#
+# Root for apps, confirmed on Windows with Windows Hello (device/wsa/wsa_x86_64/elevate).
+#
+# wsa_elevated - the daemon: root, but a narrow domain. It talks to the Windows host over vsock,
+# hears apps on /dev/socket/wsa_elevate, reads packages.list to name them, and starts
+# wsa-elevate-exec, whose executable enters su - the domain AOSP keeps for root on debug
+# builds, which every other domain already lets pass descriptors, binder calls and pipes to
+# (pm, am, cmd work from a root shell). The daemon never receives an app's descriptors: the
+# elevated process takes them from the app itself (pidfd_getfd).
+type wsa_elevated, domain, coredomain, mlstrustedsubject;
+type wsa_elevated_exec, system_file_type, exec_type, file_type;
+type wsa_elevate_exec, system_file_type, exec_type, file_type;
+type wsa_elevate_socket, file_type, coredomain_socket, mlstrustedobject;
+
+init_daemon_domain(wsa_elevated)
+
+# The elevation bridge on Windows connects to the daemon (vsock port "WSEV").
+allow wsa_elevated self:vsock_socket { create bind listen accept read write getattr getopt setopt shutdown };
+
+# Apps ask on the socket init creates; who they are comes from the kernel (SO_PEERCRED).
+allow wsa_elevated self:unix_stream_socket { accept listen read write getattr getopt shutdown };
+allow wsa_elevated packages_list_file:file r_file_perms;
+allow wsa_elevated system_data_file:dir search;
+
+# Apps and the adb shell may ask; Windows Hello decides.
+unix_socket_connect({ untrusted_app_all platform_app priv_app system_app shell }, wsa_elevate, wsa_elevated)
+
+# /dev/wsa/bin, last on the PATH: the su link for root apps while WSA-Next on Windows wants it.
+type wsa_elevate_dir, file_type, mlstrustedobject;
+allow wsa_elevated wsa_elevate_dir:dir { search getattr write add_name remove_name };
+allow wsa_elevated wsa_elevate_dir:lnk_file { create unlink getattr };
+allow { appdomain shell -isolated_app_all -sdk_sandbox_all } wsa_elevate_dir:dir { search getattr };
+allow { appdomain shell -isolated_app_all -sdk_sandbox_all } wsa_elevate_dir:lnk_file { read getattr };
+dontaudit domain wsa_elevate_dir:dir search;  # a command looked up on the PATH by anyone else
+
+userdebug_or_eng(`
+  # The elevated process: the executable of the launcher enters su (no apostrophes in m4 quotes).
+  domain_auto_trans(wsa_elevated, wsa_elevate_exec, su)
+  # Signals of the client, and a hangup when it goes away, reach the process group of the command.
+  allow wsa_elevated su:process { signal sigkill sigstop };
+')

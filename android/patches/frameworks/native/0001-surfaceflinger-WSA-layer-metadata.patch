@@ -1,0 +1,81 @@
+--- a/services/surfaceflinger/FrontEnd/LayerSnapshot.h	2026-11-18 00:08:26.281962200 +0100
++++ b/services/surfaceflinger/FrontEnd/LayerSnapshot.h	2026-11-18 00:08:26.454659200 +0100
+@@ -87,6 +87,9 @@
+     gui::DropInputMode dropInputMode;
+     gui::TrustedOverlay trustedOverlay;
+     gui::GameMode gameMode;
++    // Windows Subsystem for Android: task id inherited from the nearest ancestor that
++    // carries METADATA_TASK_ID (window manager sets it on the task surface only).
++    int32_t wsaTaskId = 0;
+     scheduler::LayerInfo::FrameRate frameRate;
+     scheduler::LayerInfo::FrameRate inheritedFrameRate;
+     scheduler::LayerInfo::FrameRateSelectionStrategy frameRateSelectionStrategy;
+--- a/services/surfaceflinger/FrontEnd/LayerSnapshotBuilder.cpp	2026-11-18 00:08:26.320104800 +0100
++++ b/services/surfaceflinger/FrontEnd/LayerSnapshotBuilder.cpp	2026-11-18 00:08:26.461952500 +0100
+@@ -19,6 +19,7 @@
+ #undef LOG_TAG
+ #define LOG_TAG "SurfaceFlinger"
+ 
++#include <cstring>
+ #include <numeric>
+ #include <optional>
+ 
+@@ -316,6 +317,44 @@
+     }
+ }
+ 
++// Windows Subsystem for Android: the host composer shows every Android task as its own
++// Windows window and assigns each layer to one of them through these generic metadata
++// keys. Values: task id (int32, only when known), window type (int32), secure (bool).
++constexpr char kWsaTaskIdKey[] = "com.microsoft.wsa.taskid";
++constexpr char kWsaWindowTypeKey[] = "com.microsoft.wsa.windowtype";
++constexpr char kWsaSecureKey[] = "com.microsoft.wsa.secure";
++
++std::vector<uint8_t> int32ToBytes(int32_t value) {
++    std::vector<uint8_t> bytes(sizeof(value));
++    memcpy(bytes.data(), &value, sizeof(value));
++    return bytes;
++}
++
++void updateWsaMetadata(LayerSnapshot& snapshot, const RequestedLayerState& requested,
++                       const LayerSnapshot& parentSnapshot) {
++    snapshot.wsaTaskId = requested.metadata.has(gui::METADATA_TASK_ID)
++            ? requested.metadata.getInt32(gui::METADATA_TASK_ID, 0)
++            : parentSnapshot.wsaTaskId;
++    snapshot.metadata.erase(kWsaTaskIdKey);
++    snapshot.metadata.erase(kWsaWindowTypeKey);
++    snapshot.metadata.erase(kWsaSecureKey);
++    if (snapshot.wsaTaskId > 0) {
++        snapshot.metadata.emplace(kWsaTaskIdKey,
++                                  compositionengine::GenericLayerMetadataEntry{
++                                          false, int32ToBytes(snapshot.wsaTaskId)});
++    }
++    snapshot.metadata.emplace(kWsaWindowTypeKey,
++                              compositionengine::GenericLayerMetadataEntry{
++                                      false,
++                                      int32ToBytes(requested.metadata.getInt32(
++                                              gui::METADATA_WINDOW_TYPE, 0))});
++    snapshot.metadata.emplace(kWsaSecureKey,
++                              compositionengine::GenericLayerMetadataEntry{
++                                      false,
++                                      std::vector<uint8_t>{
++                                              static_cast<uint8_t>(snapshot.isSecure ? 1 : 0)}});
++}
++
+ void clearChanges(LayerSnapshot& snapshot) {
+     snapshot.changes.clear();
+     snapshot.clientChanges = 0;
+@@ -849,6 +888,13 @@
+         updateMetadataAndGameMode(snapshot, requested, args, parentSnapshot);
+     }
+ 
++    if (forceUpdate ||
++        snapshot.changes.any(RequestedLayerState::Changes::Metadata |
++                             RequestedLayerState::Changes::Hierarchy) ||
++        snapshot.clientChanges & layer_state_t::eFlagsChanged) {
++        updateWsaMetadata(snapshot, requested, parentSnapshot);
++    }
++
+     if (forceUpdate || snapshot.clientChanges & layer_state_t::eFixedTransformHintChanged ||
+         args.displayChanges) {
+         snapshot.fixedTransformHint = requested.fixedTransformHint != ui::Transform::ROT_INVALID

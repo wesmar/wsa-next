@@ -1,0 +1,15 @@
+diff --git a/services/surfaceflinger/SurfaceFlinger.cpp b/services/surfaceflinger/SurfaceFlinger.cpp
+index 896d13d..74248c7 100644
+--- a/services/surfaceflinger/SurfaceFlinger.cpp
++++ b/services/surfaceflinger/SurfaceFlinger.cpp
+@@ -924,7 +924,9 @@ void SurfaceFlinger::init() FTL_FAKE_GUARD(kMainThreadContext) {
+ 
+     ClientCache::getInstance().setRenderEngine(&getRenderEngine());
+ 
+-    mHasReliablePresentFences =
++    // Without a sync framework the composer cannot signal present fences, so treat them as
++    // unreliable, as DispSync did when it ignored present fences on such devices.
++    mHasReliablePresentFences = hasSyncFramework &&
+             !getHwComposer().hasCapability(Capability::PRESENT_FENCE_IS_NOT_RELIABLE);
+ 
+     enableLatchUnsignaledConfig = getLatchUnsignaledConfig();

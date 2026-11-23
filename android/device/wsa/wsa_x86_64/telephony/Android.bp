@@ -1,0 +1,53 @@
+// WSA-Next © 2026 Marek Wesołowski - wesmar
+// SIM, network and SMS for Android from the PC's modem. Android runs Cuttlefish's AT-command RIL
+// as a platform HAL that listens on a Hyper-V socket (android/patches/device/google/cuttlefish);
+// on Windows, WSA-Next's modem bridge (src/telephony) connects to it and answers the AT commands
+// with the Windows mobile broadband API. No calls and no mobile data: the PC has its own network,
+// and a laptop's modem has no voice path.
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+prebuilt_etc {
+    name: "wsa-ril.rc",
+    src: "wsa-ril.rc",
+    sub_dir: "init",
+    system_ext_specific: true,
+}
+
+// The radio HAL instances libril publishes (a framework manifest: the HAL is on system_ext).
+prebuilt_etc {
+    name: "wsa-ril-manifest.xml",
+    src: "wsa-ril-manifest.xml",
+    filename_from_src: true,
+    sub_dir: "vintf/manifest",
+    system_ext_specific: true,
+}
+
+// MMS: joins MmsService's connection with WSA-Next's (vsock port "WSMM"); Windows opens the
+// operator's MMS APN on the modem (android/patches/packages/services/Mms).
+cc_binary {
+    name: "wsa-mms",
+    system_ext_specific: true,
+    init_rc: ["wsa-mms.rc"],
+    srcs: ["wsa-mms.cpp"],
+    cflags: [
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+    ],
+    shared_libs: [
+        "libcutils",
+        "liblog",
+    ],
+}
+
+// SIM, network and SMS - not android.hardware.telephony.calling or .data.
+prebuilt_etc {
+    name: "wsa-telephony-features.xml",
+    src: "wsa-telephony-features.xml",
+    filename_from_src: true,
+    sub_dir: "permissions",
+    system_ext_specific: true,
+}
