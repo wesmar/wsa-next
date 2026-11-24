@@ -16,10 +16,11 @@ Android 15 for the **Windows Subsystem for Android 2407** host, built from AOSP 
 (`android-15.0.0_r36`, build `BP1A.250505.005.D1`).
 
 Microsoft ended WSA with Android 13 (`2407.40000.4.0`). The Windows side of WSA
-(`WsaClient`, `WsaService`, the Hyper-V VM, the kernel and the vendor partition with the
+(`WsaClient`, `WsaService`, the Hyper-V VM and the vendor partition with the
 Windows HALs) still works on current Windows 11, so the Android side can move on by
-itself. WSA-Next replaces only the Android **system**, **system_ext** and **product**
-images and keeps everything else from Microsoft.
+itself. WSA-Next replaces the Android **system**, **system_ext**, **product** images
+and the **Linux 6.18.64.1 LTS kernel** (built from Microsoft's `linux-msft-wsl-6.18.y`
+baseline with Android 15 ACK ports), while keeping Microsoft's Windows host and vendor partition.
 
 **Download:** `WSA-Next.msi` (installer) or `WSA-Next.zip` (portable) from the [latest release](https://github.com/wesmar/wsa-next/releases/latest).
 
@@ -135,12 +136,12 @@ your Android apps and data.
 
 ## What works
 
-Tested on a clean install (fresh userdata) with the stock WSA 2407 kernel, the stock
-vendor partition, SELinux **enforcing** and no manual tweaks:
+Tested on a clean install (fresh userdata) with the WSA-Next Linux 6.18.64.1 LTS kernel,
+the stock vendor partition, SELinux **enforcing** and no manual tweaks:
 
 | Area | State |
 |---|---|
-| Boot, SELinux enforcing, stock Microsoft kernel 5.15.104 | works |
+| Boot, SELinux enforcing, Linux 6.18.64.1 LTS kernel (`linux-msft-wsl-6.18.y` + ACK ports) | works |
 | Android apps as Windows windows (open, move, resize, close) | works |
 | Launching apps from Windows (`wsa://package`), Start menu shortcuts after install | works |
 | APK install with Windows package verification | works |
@@ -159,7 +160,7 @@ vendor partition, SELinux **enforcing** and no manual tweaks:
 | Bluetooth | in progress: the PC's adapter through `WSA-Next.exe` (**Bluetooth** menu): LE scanning, GATT (reads, writes, notifications, indications), pairing through Windows; classic Bluetooth (RFCOMM) not yet (WSA 2407 has no Bluetooth) |
 | Fingerprint | Windows Hello (fingerprint, face or PIN) as Android's fingerprint sensor, class WEAK (WSA 2407 has none) |
 | SIM, SMS and MMS | in testing: a PC with a mobile broadband modem gives Android its SIM, network, SMS and MMS (messages in Android's SMS app, such as Google Messages; codes read by apps that sign in with a phone number; pictures in and out through the operator's MMS access point, opened by Windows next to the PC's own connection). No calls and no mobile data in Android: the PC has its own network. Without a modem Android shows no SIM (WSA 2407 has no telephony) |
-| Root for apps | `0` - root is uid 0 - confirmed on Windows with Windows Hello for every request, off by default; no Magisk, the images stay signed and unchanged (userdebug builds) |
+| Root for apps | `0` - root is uid 0 - confirmed on Windows with Windows Hello for every request, off by default; no Magisk, the images stay signed and unchanged |
 
 WSA's Houdini (2023) cannot load many current ARM64-only apps (BTI/PAC code, 16 KB
 pages, packed libraries such as Edge's `libmsaoaidsec.so`). The Google Play variant
@@ -457,7 +458,7 @@ flowchart LR
         EXE(["WSA-Next.exe<br/>installer · background host"]):::win
         CLIENT(["WsaClient · WsaService<br/>Microsoft, unchanged"]):::ms
     end
-    subgraph VM["Hyper-V VM · Microsoft kernel 5.15"]
+    subgraph VM["Hyper-V VM · Linux 6.18.64.1 LTS (WSA-Next)"]
         SYS(["system · system_ext · product<br/>Android 15 · WSA-Next"]):::droid
         HALS(["WSA-Next HALs and daemons<br/>Bluetooth · fingerprint · RIL · wsa-mms · wsa-elevated"]):::droid
         VEN(["vendor · Android 13 HALs<br/>Microsoft WSA 2407"]):::ms
@@ -496,7 +497,7 @@ The disks, as WSA's VM sees them:
 Windows 11
   WsaClient / WsaService (Microsoft, unchanged)
   Hyper-V VM
-    kernel 5.15.104-windows-subsystem-for-android (Microsoft)
+    kernel 6.18.64.1+ (WSA-Next, from linux-msft-wsl-6.18.y + ACK ports)
     initrd: wsainit (Microsoft, WSL-derived init)
     SCSI 0:0:0:0  system.vhdx      <- WSA-Next (root filesystem, system-as-root)
     SCSI 0:0:0:1  vendor.vhdx      <- Microsoft WSA 2407 (Android 13 vendor, VNDK 33)
@@ -1056,8 +1057,7 @@ Debugging notes:
   connects 24 s after the first start of a clean installation.
 
   Finding it took longer than fixing it:
-  * The original Microsoft `WsaClient.exe` hung the same way, so neither WSAPatch nor any other
-    binary patch was the cause.
+  * The original Microsoft `WsaClient.exe` hung the same way, so no binary patch was the cause.
   * Android was idle: `debuggerd -j` stacks of the system server and SystemApp showed nothing
     blocked.
   * A non-invasive `cdb -pv` stack dump of WsaClient showed all eight pool workers inside the
@@ -1103,21 +1103,18 @@ Debugging notes:
 * Release build: the `user` variant. Official images are already signed with the project's own
   release keys (`vendor/wsa-keys`, not in this repository; builds without them keep the AOSP test
   keys); APEX keys are still the AOSP ones.
-* Installer: `WSA-Next.exe` (see above) runs WSAPatch on Windows 11 build 28000+
-  (`WsaClient.exe` fix for 26H1).
 * Root for apps on `user` builds: AOSP has a root domain only on debug builds, so `0` needs a
   domain of its own there.
-* Kernel migration: gradually move off Microsoft's aging `5.15.104` WSA kernel onto the current
-  Microsoft Linux kernel baseline, porting and patching the WSA-specific pieces step by step so
-  newer Android versions are no longer held back by a 2022 kernel.
+* Kernel 6.18 LTS tracking: migration off Microsoft's 2022 `5.15.104` WSA kernel to
+  `linux-msft-wsl-6.18.y` (`6.18.64.1` LTS, with `ashmem`, `xt_quota2` and `uid_sys_stats`
+  ported from ACK `android15-6.6`) is complete; future releases track upstream 6.18 LTS updates.
 * Android 18: parallel porting begins as soon as Android 18 lands in AOSP (potentially as early
   as February 2027), aiming for a working release by late summer 2027 with GPU/NPU acceleration,
   classic Bluetooth (RFCOMM), built-in laptop sensors, cameras, WWAN and native ARM64 builds.
 * Bluetooth, which WSA never had, with the PC's own adapter (no USB passthrough or extra
   hardware): LE scanning, GATT and pairing work through the bridge in `WSA-Next.exe`, which
   implements the controller on top of the Windows Bluetooth APIs; classic Bluetooth (RFCOMM) is
-  next. Microsoft's kernel stays: the Android Bluetooth stack runs in user space and needs no
-  `CONFIG_BT`.
+  next. The Android Bluetooth stack runs in user space and needs no `CONFIG_BT`.
 * MMS notices that arrive while Android is off (see *Telephony, the limits and edge cases*).
 * Optional stable IP address for the Android side.
 
@@ -1150,7 +1147,8 @@ carry AOSP's Apache 2.0 header. The zstd decoder in `third_party/zstd` is BSD-li
 from work created and shared by Google and used according to the terms of the Creative Commons
 3.0 Attribution License.
 
-WSA-Next is not affiliated with Microsoft or Google. Windows Subsystem for Android (its package,
-kernel and vendor image) is Microsoft's, and Google Mobile Services and Google's apps are
-Google's: the MIT License does not cover them, this repository does not contain them, and the
-WSA package keeps Microsoft's identity only so that Windows integration works.
+WSA-Next is not affiliated with Microsoft or Google. Windows Subsystem for Android (its Windows
+package and vendor image) is Microsoft's, the Linux 6.18 kernel is GPL-2.0 (built from
+Microsoft's `WSL2-Linux-Kernel` with AOSP ACK ports), and Google Mobile Services and Google's
+apps are Google's: the MIT License does not cover them, this repository does not contain them,
+and the WSA package keeps Microsoft's identity only so that Windows integration works.

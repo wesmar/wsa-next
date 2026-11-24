@@ -1,0 +1,39 @@
+# WSA-Next on linux-msft-wsl-6.18.y: applied on top of the stock WSA 2407 config (audit/stock.config).
+# Only switches that are new in 6.18 or needed again because 6.18 moved a dependency.
+
+# Legacy iptables (netd, Android's firewall, tethering and NAT use iptables-legacy, not nftables)
+CONFIG_NETFILTER_XTABLES_LEGACY=y
+CONFIG_IP_NF_IPTABLES_LEGACY=y
+CONFIG_IP6_NF_IPTABLES_LEGACY=y
+CONFIG_IP_NF_ARPTABLES=y
+
+# cgroup v1 controllers that Android's cgroups.json mounts (/dev/cpuset, /dev/memcg)
+CONFIG_CPUSETS_V1=y
+CONFIG_MEMCG_V1=y
+
+# Android 15 base requirements (kernel/configs v/android-6.6/android-base.config) that need a nudge in 6.18
+CONFIG_BUG_ON_DATA_CORRUPTION=y
+CONFIG_NET_ACT_MIRRED=y
+CONFIG_IFB=y
+CONFIG_LEDS_CLASS_MULTICOLOR=y
+CONFIG_HID_PLAYSTATION=y
+CONFIG_PLAYSTATION_FF=y
+CONFIG_HID_WACOM=y
+
+# Android common kernel features ported from ACK android15-6.6 (tools/kernel/port-ack.py)
+CONFIG_ASHMEM=y
+CONFIG_NETFILTER_XT_MATCH_QUOTA2=y
+CONFIG_NETFILTER_XT_MATCH_QUOTA2_LOG=y
+CONFIG_PROFILING=y
+CONFIG_TASK_XACCT=y
+CONFIG_TASK_IO_ACCOUNTING=y
+CONFIG_UID_SYS_STATS=y
+
+# Diagnostics: 256 KB kernel log (on a first boot the system_server watchdog's NMI backtraces
+# overflowed the stock 128 KB buffer and pushed out the start of the boot)
+CONFIG_LOG_BUF_SHIFT=18
+
+# Upstream 6.9+ FUSE passthrough requires CAP_SYS_ADMIN in FuseDaemon, which Android's
+# MediaProvider does not hold (ACK patches the check); leaving it on causes EPERM -> EFAULT
+# on every /sdcard/ write. Disabling it makes MediaProvider cleanly use standard FUSE.
+# CONFIG_FUSE_PASSTHROUGH is not set
