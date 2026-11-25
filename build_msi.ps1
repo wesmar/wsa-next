@@ -367,10 +367,10 @@ try {
         @('CostInitialize', $null, 800), @('FileCost', $null, 900), @('CostFinalize', $null, 1000),
         @('SetArpInstallLocation', $null, 1010),
         @('InstallValidate', $null, 1400), @('InstallInitialize', $null, 1500),
+        @('RemoveExistingProducts', $null, 1505),
         @('StopHosts', 'EXISTINGEXE', 1510),
         @('RemoveWsaNext', "$removing AND NOT REMOVEDATA", 1520),
         @('RemoveWsaNextAll', "$removing AND REMOVEDATA", 1521),
-        @('RemoveExistingProducts', $null, 1525),
         @('ProcessComponents', $null, 1600), @('UnpublishFeatures', $null, 1800), @('RemoveRegistryValues', $null, 2600),
         @('RemoveShortcuts', $null, 3200), @('RemoveFiles', $null, 3500), @('RemoveFolders', $null, 3600), @('CreateFolders', $null, 3700),
         @('InstallFiles', $null, 4000), @('CreateShortcuts', $null, 4500), @('WriteRegistryValues', $null, 5000),
@@ -525,7 +525,7 @@ try {
                       @('O', 'OK', 'ErrorOk'), @('R', 'Retry', 'ErrorRetry'), @('Y', 'Yes', 'ErrorYes'))
     for ($i = 0; $i -lt $errorButtons.Count; $i++) {
         $b = $errorButtons[$i]
-        Ctl 'ErrorDlg' $b[0] 'PushButton' 100 80 56 17 ($V + $E) $null $b[1] $null $null $errorButtons[($i + 1) % $errorButtons.Count][0]
+        Ctl 'ErrorDlg' $b[0] 'PushButton' 100 80 56 17 ($V + $E) $null $b[1] $null $null $null
         Evt 'ErrorDlg' $b[0] 'EndDialog' $b[2] '1' 1
     }
 
