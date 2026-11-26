@@ -23,6 +23,11 @@ MainWindow::~MainWindow() {
 }
 
 bool MainWindow::Create(int showCommand) {
+    if (HWND existing = FindWindowW(kClassName, nullptr)) {
+        if (IsIconic(existing)) ShowWindow(existing, SW_RESTORE);
+        SetForegroundWindow(existing);
+        return false;
+    }
     WNDCLASSEXW wc{sizeof wc};
     wc.lpfnWndProc = Proc;
     wc.hInstance = m_instance;

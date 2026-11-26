@@ -231,7 +231,14 @@ void Tray::ShowMenu() {
 
 void Tray::Command(UINT id) {
     switch (id) {
-    case CmdOpen: ShellExecuteW(nullptr, L"open", Executable().c_str(), nullptr, nullptr, SW_SHOWNORMAL); break;
+    case CmdOpen:
+        if (HWND existing = FindWindowW(L"WSANext.MainWindow", nullptr)) {
+            if (IsIconic(existing)) ShowWindow(existing, SW_RESTORE);
+            SetForegroundWindow(existing);
+        } else {
+            ShellExecuteW(nullptr, L"open", Executable().c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+        }
+        break;
     case CmdRegister:
         m_registrationShown = false;
         (void)RegisterWithGoogle(m_hwnd);

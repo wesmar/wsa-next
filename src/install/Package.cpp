@@ -216,7 +216,7 @@ namespace {
 // execution alias. Started as a plain file, WsaClient runs outside the package and does not find
 // the DLLs of the package root (gfxstream_backend.dll) - Windows then shows "system error" instead
 // of shutting anything down. No alias: WSA is not registered. Returns the WsaClient process.
-KernelHandle StartShutdown(const fs::path& folder) {
+fs::path WsaClientAlias() {
     PWSTR local = nullptr;
     fs::path client;
     if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &local)))
@@ -224,6 +224,13 @@ KernelHandle StartShutdown(const fs::path& folder) {
     CoTaskMemFree(local);
     std::error_code ec;
     if (client.empty() || !fs::exists(fs::symlink_status(client, ec))) return {};
+    return client;
+}
+
+KernelHandle StartShutdown(const fs::path& folder) {
+    const fs::path client = WsaClientAlias();
+    if (client.empty()) return {};
+    std::error_code ec;
     std::wstring command = std::format(L"\"{}\" /shutdown", client.wstring());
     STARTUPINFOW si{sizeof si};
     PROCESS_INFORMATION pi{};
@@ -265,14 +272,29 @@ void DefaultWsaSettings() {
 Result<> LaunchAndroid() {
     // The installed release names its variant ("variant": "Google Play") in release.json.
     bool googlePlay = false;
+    fs::path folder;
     if (const auto package = FindWsa()) {
-        std::ifstream file(package->location / L"release.json", std::ios::binary);
+        folder = package->location;
+        std::ifstream file(folder / L"release.json", std::ios::binary);
         const std::string raw((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
         std::smatch variant;
         static const std::regex kVariant(R"re("variant"\s*:\s*"([^"]*)")re");
         googlePlay = std::regex_search(raw, variant, kVariant) && variant[1].str().find("Google") != std::string::npos;
     }
-    return OpenUri(googlePlay ? L"wsa://com.android.vending" : L"wsa://com.android.settings");
+    const std::wstring uri = googlePlay ? L"wsa://com.android.vending" : L"wsa://com.android.settings";
+    if (const fs::path client = WsaClientAlias(); !client.empty()) {
+        std::wstring command = std::format(L"\"{}\" /launch {}", client.wstring(), uri);
+        STARTUPINFOW si{sizeof si};
+        PROCESS_INFORMATION pi{};
+        std::error_code ec;
+        const wchar_t* directory = !folder.empty() && fs::is_directory(folder, ec) ? folder.c_str() : nullptr;
+        if (CreateProcessW(client.c_str(), command.data(), nullptr, nullptr, FALSE, 0, nullptr, directory, &si, &pi)) {
+            CloseHandle(pi.hThread);
+            CloseHandle(pi.hProcess);
+            return {};
+        }
+    }
+    return OpenUri(uri);
 }
 
 Result<> OpenUri(const std::wstring& uri) {
