@@ -62,6 +62,8 @@
 11036=Do zablokowania Windows
 11037=Ustawienia Androida…
 11038=Ustawienia Androida
+11039=Aktualizuj WSA-Next…
+11040=Sprawdzaj aktualizacje automatycznie
 
 # Buttons and labels
 12000=Zainstaluj
@@ -72,6 +74,7 @@
 12005=Dziennik
 12006=Wesprzyj
 12007=Zarejestruj…
+12008=Aktualizuj program
 12010=Android 15 dla Windows
 12011=Ten komputer
 12012=Składniki
@@ -162,6 +165,7 @@
 14029=ID skopiowane - na stronie Google: zaloguj się, wklej (Ctrl+V), Zarejestruj.
 14030=Uruchamiam Androida - strona Google otworzy się, gdy poda ID.
 14031=Usługa WSA-Next w tle nie działa.
+14032=Instalator Windows aktualizuje WSA-Next do wersji {}. Po zakończeniu WSA-Next otworzy się ponownie.
 
 # Dialogs
 15000=Własne wydanie
@@ -222,6 +226,7 @@
 16032=Przełączanie na nowe wydanie
 16033=WSA jest zarejestrowany dla użytkownika Windows {} z folderu {}. Windows pozwala zarejestrować rozpakowany WSA tylko jednemu użytkownikowi naraz: najpierw odinstaluj go na tamtym koncie (dane Androida można zachować), potem zainstaluj tutaj.
 16034=WSA działa na koncie użytkownika Windows {}. Zamknij go tam (Ustawienia WSA, Wyłącz) i zainstaluj ponownie.
+16035=Wydanie {} wymaga WSA-Next {} lub nowszego: najpierw zaktualizuj WSA-Next.
 
 # Log
 17000=Uruchomiono {} {}.
@@ -280,6 +285,7 @@
 17053=WSA-Next {} zainstalowany dla użytkownika Windows {}. WSA zostaje zarejestrowany tylko dla niego: Windows pozwala zarejestrować rozpakowany pakiet tylko jednemu użytkownikowi naraz.
 17054=WSA jest zarejestrowany dla użytkownika Windows {} z {}: jego pliki i to, czego potrzebuje w Windows, zostają. Usuń go na tamtym koncie.
 17055=Ustawienia Androida są w menu Start: {}
+17056=Pobieranie instalatora WSA-Next {} ({})
 
 # Errors
 18000=Obsługiwane są tylko adresy https:// (http:// tylko dla localhost).
@@ -308,6 +314,7 @@
 18025=Harmonogram zadań
 18026=Uruchamianie mostka Bluetooth
 18027=Uruchamianie instalatora WSA-Next
+18028=Pobrany instalator WSA-Next nie jest podpisany przez wydawcę WSA-Next. Został usunięty i nie został uruchomiony.
 18030=Za mało pamięci do rozpakowania.
 18031=Uszkodzone dane skompresowane ({}).
 18032=Dane skompresowane kończą się za wcześnie.
@@ -338,3 +345,5 @@
 19017=Zarejestruj ten komputer w Google Play
 19018=Potrzebne raz po nowej instalacji. Kliknij tutaj: identyfikator urządzenia trafi do schowka i otworzy się strona Google. Zaloguj się, wklej identyfikator i naciśnij Zarejestruj; po kilku minutach otwórz ponownie Sklep Play.
 19019=Zarejestruj w Google Play…
+19020=Dostępny jest WSA-Next {}
+19021=Dostępne jest wydanie Androida {}

@@ -114,6 +114,8 @@
     <ClCompile Include="src\core\Manifest.cpp" />
     <ClCompile Include="src\core\System.cpp" />
     <ClCompile Include="src\core\Uninstall.cpp" />
+    <ClCompile Include="src\core\Update.cpp" />
+    <ClCompile Include="src\host\Updates.cpp" />
     <ClCompile Include="src\gui\Dialogs.cpp" />
     <ClCompile Include="src\gui\MainWindow.cpp" />
     <ClCompile Include="src\gui\MainWindowCommands.cpp" />
@@ -180,6 +182,8 @@
     <ClInclude Include="src\core\Manifest.h" />
     <ClInclude Include="src\core\System.h" />
     <ClInclude Include="src\core\Uninstall.h" />
+    <ClInclude Include="src\core\Update.h" />
+    <ClInclude Include="src\host\Updates.h" />
     <ClInclude Include="src\gui\Dialogs.h" />
     <ClInclude Include="src\gui\MainWindow.h" />
     <ClInclude Include="src\gui\MainWindowDetail.h" />

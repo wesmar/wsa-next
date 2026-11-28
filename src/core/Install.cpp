@@ -1,5 +1,6 @@
 // WSA-Next © 2026 Marek Wesołowski - wesmar
 #include "core/Install.h"
+#include "core/Update.h"
 #include "install/Package.h"
 #include "install/Setup.h"
 #include "install/Traces.h"
@@ -267,6 +268,7 @@ Result<Outcome> Run(const Manifest& manifest, const Options& options, const Call
 
     // --- What this Windows has, what has to be installed ---------------------------------------
     meter.Phase(Text::Get(IDS_PHASE_CHECKING), -1);
+    if (Update::AppTooOld(manifest)) return Fail(Text::Format(IDS_APP_TOO_OLD, manifest.version, manifest.app->minimum));
     const SystemInfo system = Inspect();
     log(Level::Info, Text::Format(IDS_LOG_WINDOWS, system.Version()));
     if (!system.Supported()) return Fail(Text::Format(IDS_WINDOWS_TOO_OLD, system.build, Config::kMinWindowsBuild));

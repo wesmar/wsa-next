@@ -147,8 +147,8 @@ Result<> Attempt(const std::wstring& url, const fs::path& part, std::uint64_t ex
 
 }  // namespace
 
-Result<std::string> FetchText(const std::wstring& url, std::size_t limit, std::stop_token stop) {
-    auto http = Open(url, L"GET", 0, 10000, 20000);
+Result<std::string> FetchText(const std::wstring& url, std::size_t limit, std::stop_token stop, DWORD connectMs, DWORD ioMs) {
+    auto http = Open(url, L"GET", 0, connectMs, ioMs);
     if (!http) return Fail(http.error());
     if (http->status != 200) return Fail(Text::Format(IDS_HTTP_STATUS_URL, http->status, url));
     std::string body;

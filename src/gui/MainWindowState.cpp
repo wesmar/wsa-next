@@ -7,6 +7,7 @@
 #include "bluetooth/Bridge.h"
 #include "bluetooth/Log.h"
 #include "core/Release.h"
+#include "core/Update.h"
 #include "support/Signature.h"
 #include "bluetooth/Scanner.h"
 #include "host/Host.h"
@@ -93,6 +94,16 @@ void MainWindow::OnRefreshed(Core::SystemInfo system, std::optional<Core::Manife
     } else {
         Log(Level::Error, Text::Format(IDS_STATUS_NO_MANIFEST, m_manifestError));
     }
+    // A newer WSA-Next: the button left of "Support". What was found also goes to the background
+    // host's icon (its dot), which reads it from the settings.
+    m_appUpdate.clear();
+    if (m_manifest) {
+        if (const Core::AppRelease* app = Core::Update::NewerApp(*m_manifest)) {
+            m_appUpdate = app->version;
+            Log(Level::Info, Text::Format(IDS_TRAY_APP_AVAILABLE, app->version));
+        }
+        if (Core::Update::Record(*m_manifest, m_folder)) Host::Reload();
+    }
     Log(Level::Info, Text::Format(IDS_LOG_WINDOWS, m_system->Version()));
     UpdatePlan();
     StatusFromPlan();
@@ -119,6 +130,8 @@ void MainWindow::StatusFromPlan() {
         SetStatus(Level::Error, Text::Format(IDS_STATUS_UNSUPPORTED, Text::Get(IDS_SYS_UNSUPPORTED)));
     } else if (!m_manifest) {
         SetStatus(Level::Error, Text::Get(IDS_STATUS_NO_RELEASE));  // the reason is shown in the card
+    } else if (Core::Update::AppTooOld(*m_manifest)) {
+        SetStatus(Level::Warning, Text::Format(IDS_APP_TOO_OLD, m_manifest->version, m_manifest->app->minimum));
     } else if (m_plan.UpToDate()) {
         SetStatus(Level::Success, Text::Format(IDS_STATUS_UPTODATE, m_manifest->version));
     } else if (m_state.components.empty()) {
@@ -131,7 +144,9 @@ void MainWindow::StatusFromPlan() {
 bool MainWindow::Can(UINT command) const {
     const bool idle = !m_busy && !m_refreshing;
     switch (command) {
-    case CmdInstall: return idle && m_manifest && m_system && m_system->Supported();
+    case CmdInstall: return idle && m_manifest && m_system && m_system->Supported() && !Core::Update::AppTooOld(*m_manifest);
+    case CmdUpdateApp: return idle && !m_appUpdate.empty();
+    case CmdUpdateCheck: return Signature::OfficialFeatures();  // the background host looks
     case CmdCancel: return m_busy && !m_removing;
     case CmdUninstall: return idle && m_system && Core::Removable(m_folder, *m_system);
     case CmdBtStart: return !m_removing && m_btAdapter && !m_btRunning && Signature::OfficialFeatures();
@@ -159,7 +174,7 @@ bool MainWindow::Can(UINT command) const {
 }
 
 void MainWindow::UpdateControls() {
-    for (UINT id : {CmdInstall, CmdCancel, CmdLaunch, CmdChangeFolder, CmdSourceMenu, CmdBtToggle, CmdRegister}) {
+    for (UINT id : {CmdInstall, CmdCancel, CmdLaunch, CmdChangeFolder, CmdSourceMenu, CmdBtToggle, CmdRegister, CmdUpdateApp}) {
         HWND b = GetDlgItem(m_hwnd, static_cast<int>(id));
         const bool enable = Can(id);
         if ((IsWindowEnabled(b) != FALSE) != enable) {

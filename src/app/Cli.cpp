@@ -13,6 +13,7 @@
 #include "core/Release.h"
 #include "core/System.h"
 #include "core/Uninstall.h"
+#include "core/Update.h"
 #include "install/Package.h"
 #include "install/Setup.h"
 #include "install/Traces.h"
@@ -155,6 +156,11 @@ int Check(Console& con, const Args& args) {
     con.Line(std::format(L"Release {}", manifest->official      ? L"official (publisher signature)"
                                         : manifest->catalog.empty() ? L"unofficial (not signed)"
                                                                     : L"unofficial (signature not valid for this manifest)"));
+    if (const Core::AppRelease* app = Core::Update::NewerApp(*manifest))
+        con.Line(std::format(L"Update  WSA-Next {} is available (this is {}); the window installs it: Help > Update WSA-Next", app->version,
+                             Config::kAppVersion));
+    if (Core::Update::AppTooOld(*manifest))
+        con.Line(std::format(L"Needs   WSA-Next {} or newer to install this release", manifest->app->minimum));
     con.Line();
     for (const Core::PlanItem& item : plan.items) {
         const Core::Component& c = *item.component;

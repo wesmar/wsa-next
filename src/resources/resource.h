@@ -66,6 +66,8 @@
 #define IDS_MI_HELLO_REMEMBER_LOCK       11036
 #define IDS_MI_ANDROID_SETTINGS          11037
 #define IDS_START_ANDROID_SETTINGS       11038
+#define IDS_MI_UPDATE_APP                11039
+#define IDS_MI_UPDATE_CHECK              11040
 // Buttons and labels
 #define IDS_BTN_INSTALL                  12000
 #define IDS_BTN_UPDATE                   12001
@@ -75,6 +77,7 @@
 #define IDS_BTN_LOG                      12005
 #define IDS_BTN_SUPPORT                  12006
 #define IDS_BTN_REGISTER                 12007
+#define IDS_BTN_APP_UPDATE               12008
 #define IDS_CARD_RELEASE                 12010
 #define IDS_CARD_SYSTEM                  12011
 #define IDS_CARD_COMPONENTS              12012
@@ -165,6 +168,7 @@
 #define IDS_STATUS_REGISTER              14029
 #define IDS_STATUS_REGISTER_WAIT         14030
 #define IDS_STATUS_REGISTER_NOHOST       14031
+#define IDS_STATUS_APP_SETUP             14032
 
 // Dialogs
 #define IDS_CUSTOM_HEADING               15000
@@ -227,6 +231,7 @@
 #define IDS_PHASE_SWITCH                 16032
 #define IDS_OTHER_USER_FOLDER            16033
 #define IDS_OTHER_USER_RUNNING           16034
+#define IDS_APP_TOO_OLD                  16035
 // Log
 #define IDS_LOG_STARTED                  17000
 #define IDS_LOG_MANIFEST                 17001
@@ -285,6 +290,7 @@
 #define IDS_LOG_OTHER_USER_DONE          17053
 #define IDS_LOG_OTHER_USER_KEPT          17054
 #define IDS_LOG_SETTINGS_SHORTCUT        17055
+#define IDS_LOG_APP_DOWNLOAD             17056
 // Errors (network, files, archives)
 #define IDS_HTTPS_ONLY                   18000
 #define IDS_HTTP_STATUS                  18001
@@ -312,6 +318,7 @@
 #define IDS_CTX_BT_TASK                  18025
 #define IDS_CTX_BT_START                 18026
 #define IDS_CTX_SETUP                    18027
+#define IDS_APP_SETUP_UNSIGNED           18028
 #define IDS_ZSTD_MEMORY                  18030
 #define IDS_ZSTD_ERROR                   18031
 #define IDS_ZSTD_TRUNCATED               18032
@@ -341,4 +348,6 @@
 #define IDS_TRAY_REGISTER_TITLE          19017
 #define IDS_TRAY_REGISTER_TEXT           19018
 #define IDS_TRAY_REGISTER                19019
+#define IDS_TRAY_APP_AVAILABLE           19020
+#define IDS_TRAY_RELEASE_AVAILABLE       19021
 #endif

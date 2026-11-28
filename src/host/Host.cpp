@@ -6,6 +6,7 @@
 #include "host/Guest.h"
 #include "host/Registration.h"
 #include "host/Tray.h"
+#include "host/Updates.h"
 #include "biometrics/ElevationBridge.h"
 #include "biometrics/HelloBridge.h"
 #include "core/Install.h"
@@ -162,6 +163,8 @@ int RunBackground() {
     std::jthread registration = StartBridge([](std::stop_token stop) { RunRegistration(stop); });
     // The PC's modem as Android's SIM, network and SMS (ends at once on a PC without one).
     std::jthread modem = StartBridge([](std::stop_token stop) { Tel::RunBridge(stop); });
+    // A newer WSA-Next or Android release: the icon's dot (host/Updates.h).
+    std::jthread updates = StartBridge([](std::stop_token stop) { RunUpdateCheck(stop); });
     std::jthread bluetooth, elevation;
     std::unique_ptr<Tray> tray;
     NotifyHostChanged();
@@ -204,6 +207,7 @@ int RunBackground() {
     }
     Bt::Log("host: stopping");
     tray.reset();
+    updates = {};
     elevation = {};  // stops and joins the bridges
     bluetooth = {};
     modem = {};
@@ -250,6 +254,10 @@ void Stop() {
 Result<> Restart() {
     Stop();
     return Start();
+}
+
+void Reload() {
+    if (Running()) Signal(kReloadEvent);
 }
 
 bool BluetoothEnabled() { return Settings::ReadDword(kBluetoothSetting, 0) != 0; }

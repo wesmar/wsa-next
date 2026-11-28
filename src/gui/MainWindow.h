@@ -93,6 +93,8 @@ private:
     void BluetoothLog();
     void UpdateBluetoothRunning();  // on the host's change notification (and on activation)
     void RegisterWithGoogle();      // Google Play registration through the background host
+    void UpdateApp();               // WSA-Next Setup of the newer version (core/Update.h)
+    void OnSetupDone(bool ok, bool canceled, const std::wstring& error);
     [[nodiscard]] bool ShowsGooglePlay() const;  // the "This PC" card has the Google Play row
     void SetSource(const std::wstring& key);
     void EditCustomSource();
@@ -150,6 +152,7 @@ private:
     Core::Release::State m_release = Core::Release::State::Unknown;  // the host's check of the installed release
     bool m_googleRegistered = false;  // Google Play: an ID was registered from this PC (host/Registration.cpp)
     bool m_googleWaiting = false;     // asked to register while Android had not handed over the ID yet
+    std::wstring m_appUpdate;         // a newer WSA-Next the source offers, "" = none
     KernelHandle m_hostChanged;  // kHostChangedEvent
     HANDLE m_hostWait = nullptr;  // its thread-pool wait
 

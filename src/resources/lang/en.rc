@@ -64,6 +64,8 @@ BEGIN
     IDS_MI_HELLO_REMEMBER_LOCK       "Until Windows is locked"
     IDS_MI_ANDROID_SETTINGS          "Android settings…"
     IDS_START_ANDROID_SETTINGS       "Android Settings"
+    IDS_MI_UPDATE_APP                "Update WSA-Next…"
+    IDS_MI_UPDATE_CHECK              "Check for updates automatically"
     // Buttons and labels
     IDS_BTN_INSTALL                  "Install"
     IDS_BTN_UPDATE                   "Update"
@@ -73,6 +75,7 @@ BEGIN
     IDS_BTN_LOG                      "Log"
     IDS_BTN_SUPPORT                  "Donate"
     IDS_BTN_REGISTER                 "Register…"
+    IDS_BTN_APP_UPDATE               "Update app"
     IDS_CARD_RELEASE                 "Android 15 for Windows"
     IDS_CARD_SYSTEM                  "This PC"
     IDS_CARD_COMPONENTS              "Components"
@@ -163,6 +166,7 @@ BEGIN
     IDS_STATUS_REGISTER              "ID copied - on Google's page: sign in, paste (Ctrl+V), Register."
     IDS_STATUS_REGISTER_WAIT         "Starting Android - Google's page opens once it hands over the ID."
     IDS_STATUS_REGISTER_NOHOST       "WSA-Next's background service is not running."
+    IDS_STATUS_APP_SETUP             "Windows Installer is updating WSA-Next to {}. WSA-Next opens again when it is done."
 
     // Dialogs
     IDS_CUSTOM_HEADING               "Custom release"
@@ -224,6 +228,7 @@ BEGIN
     IDS_PHASE_SWITCH                 "Switching to the new release"
     IDS_OTHER_USER_FOLDER            "WSA is registered for the Windows user {} from {}. Windows lets one user at a time register an unpacked WSA: uninstall it on that account first (the Android data can be kept), then install here."
     IDS_OTHER_USER_RUNNING           "WSA is running for the Windows user {}. Close it on that account (WSA Settings, Turn off) and install again."
+    IDS_APP_TOO_OLD                  "Release {} needs WSA-Next {} or newer: update WSA-Next first."
     // Log
     IDS_LOG_STARTED                  "{} {} started."
     IDS_LOG_MANIFEST                 "Release {0} ({1}, {2}) from {3}"
@@ -282,6 +287,7 @@ BEGIN
     IDS_LOG_OTHER_USER_DONE          "WSA-Next {} installed for the Windows user {}. WSA stays registered for that user only: Windows lets one user at a time register an unpacked package."
     IDS_LOG_OTHER_USER_KEPT          "WSA is registered for the Windows user {} from {}: its files, and what it needs in Windows, stay. Remove it on that account."
     IDS_LOG_SETTINGS_SHORTCUT        "Android's settings are in the Start menu: {}"
+    IDS_LOG_APP_DOWNLOAD             "Downloading WSA-Next Setup {} ({})"
     // Errors
     IDS_HTTPS_ONLY                   "Only https:// addresses are supported (http:// only for localhost)."
     IDS_HTTP_STATUS                  "The server answered HTTP {}."
@@ -309,6 +315,7 @@ BEGIN
     IDS_CTX_BT_TASK                  "Task Scheduler"
     IDS_CTX_BT_START                 "Starting the Bluetooth bridge"
     IDS_CTX_SETUP                    "Starting WSA-Next Setup"
+    IDS_APP_SETUP_UNSIGNED           "The downloaded WSA-Next Setup is not signed by WSA-Next's publisher. It was deleted and not started."
     IDS_ZSTD_MEMORY                  "Not enough memory to decompress."
     IDS_ZSTD_ERROR                   "Damaged compressed data ({})."
     IDS_ZSTD_TRUNCATED               "The compressed data ends too early."
@@ -339,4 +346,6 @@ BEGIN
     IDS_TRAY_REGISTER_TITLE          "Register this PC with Google Play"
     IDS_TRAY_REGISTER_TEXT           "Needed once for a new installation. Click here: the device ID is copied and Google's page opens. Sign in, paste the ID and press Register; open the Play Store again a few minutes later."
     IDS_TRAY_REGISTER                "Register with Google Play…"
+    IDS_TRAY_APP_AVAILABLE           "WSA-Next {} is available"
+    IDS_TRAY_RELEASE_AVAILABLE       "Android release {} is available"
 END

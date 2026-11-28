@@ -130,7 +130,9 @@ what runs and has the switches. **Android › Android settings…** (also in the
 **Android Settings** in the Start menu next to the Android apps, and `WSA-Next.exe settings`)
 opens Android's own settings: networks and the SIM, apps, storage, display. **File › Stop WSA**
 frees the memory Android uses; it starts again with the next Android app. **File › Uninstall**
-removes WSA-Next and asks whether to keep your Android apps and data.
+removes WSA-Next and asks whether to keep your Android apps and data. When a newer Android
+release or a newer WSA-Next is out, the icon gets a small orange dot; the window then offers
+**Update** (Android) or **Update app** (WSA-Next itself, in a few seconds).
 
 | Message | What it means |
 |---|---|
@@ -183,7 +185,7 @@ mainly for ARM-only apps and games.
 ## The installer (`WSA-Next.exe`)
 
 `WSA-Next.exe` installs and updates WSA-Next: one native C++23 executable (no runtime, about
-1.6 MB) with a Direct2D interface (Windows 11 dark theme, Mica, per-monitor DPI) and the same
+1.7 MB) with a Direct2D interface (Windows 11 dark theme, Mica, per-monitor DPI) and the same
 functions on the command line. It reads a release **manifest**, downloads only the components
 that changed, checks them, unpacks them and registers WSA with Windows.
 
@@ -229,7 +231,8 @@ runs it does not cut it off: they close it first.
 ```
 WSA-Next.exe                         graphical interface (asks for administrator rights)
 WSA-Next.exe status                  Windows, Virtual Machine Platform, developer mode, installed WSA
-WSA-Next.exe check  [--source s]     what the release offers and what would be downloaded
+WSA-Next.exe check  [--source s]     what the release offers and what would be downloaded, and
+                                     whether a newer WSA-Next is out
 WSA-Next.exe install [--source s] [--dir folder] [--yes] [--files-only] [--keep-downloads]
 WSA-Next.exe uninstall [--all] --yes remove WSA-Next (keeping the Android data, or everything)
 WSA-Next.exe stop                    stop WSA and free its memory; nothing is removed
@@ -264,6 +267,23 @@ Android hands it at every start, so the window's **Register…** button, the men
 `WSA-Next.exe register` (they signal the named event `Local\WSA-Next.Host.Register`) work at any
 time. The icon follows the host's change notices (WSA's VM up or down, a bridge connected) and
 never polls.
+
+**Updates.** A newer Android release or a newer WSA-Next shows as a small orange dot on the icon,
+with a line in its tooltip and its menu (which opens the window); there is no pop-up. The host
+reads only the release manifest (about 14 KB with its catalog), at logon and when Windows reports
+a change of the network (`NotifyNetworkConnectivityHintChange`), at most once in 20 hours and
+only with Internet access; a failed read is silent and the next change of the network tries
+again. There is no timer. The window reads the manifest whenever it refreshes and records what
+it found for the icon. Nothing is downloaded without a click: a newer Android release through
+**Update** as before, a newer WSA-Next through **Update app** (left of **Donate**, shown only
+then) or **Help › Update WSA-Next…**. That downloads WSA-Next Setup into
+`%ProgramFiles%\WSA-Next\.download` (only administrators write there), checks its size, SHA-256
+and publisher signature while holding the file open, stops this session's background host and
+runs Windows Installer (`/passive`); Setup replaces `WSA-Next.exe`, starts the host again, the
+Setup file is deleted and WSA-Next opens again, in a few seconds. Each Setup is a full package
+that replaces the previous one (no patches): Windows Installer keeps exactly one copy of it in
+`C:\Windows\Installer`. Without Setup (`WSA-Next.zip`) the button opens the release page.
+**Help › Check for updates automatically** turns the host's look off; `check` shows the same.
 
 Pages the window or the host open (the releases, Google's registration page, **Donate**) open
 through Explorer: the browser runs with the user's rights, not elevated like WSA-Next.
@@ -452,7 +472,10 @@ an update only adds what changed). The vendor image as the WSA tools unpack it c
 `init.windows_x86_64.rc.backup` next to the patched `init.windows_x86_64.rc`, and init parsed it
 as a second script (Microsoft's early-init and fs actions ran twice); the script removes it with
 `debugfs` and keeps the cleaned image per input digest, so the vendor disk of a release changes
-only when Microsoft's does. The publisher then signs the manifest (a catalog made with
+only when Microsoft's does. The publisher then adds WSA-Next Setup to the release: the signed
+`WSA-Next.msi` next to the manifest and an `app` entry in it (`version`, `url`, `size`,
+`sha256`, and optionally `minimum`, the oldest `WSA-Next.exe` that may install the release),
+which versions that do not know it read past. Then the manifest is signed (a catalog made with
 `New-FileCatalog` and signed with the code signing certificate). A web server must serve `.zst`
 and `.cat` files (IIS: a `mimeMap` for each in `web.config`) and answer range requests. Served on
 the same computer as `/wsa-next`, the release is the source **local**

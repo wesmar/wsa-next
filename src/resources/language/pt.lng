@@ -62,6 +62,8 @@
 11036=Até o Windows ser bloqueado
 11037=Configurações do Android…
 11038=Configurações do Android
+11039=Atualizar o WSA-Next…
+11040=Verificar atualizações automaticamente
 
 # Buttons and labels
 12000=Instalar
@@ -72,6 +74,7 @@
 12005=Registro
 12006=Doar
 12007=Registrar…
+12008=Atualizar app
 12010=Android 15 para Windows
 12011=Este computador
 12012=Componentes
@@ -162,6 +165,7 @@
 14029=ID copiado - na página do Google: faça login, cole (Ctrl+V), Registrar.
 14030=Iniciando o Android - a página do Google abre assim que ele entregar o ID.
 14031=O serviço em segundo plano do WSA-Next não está em execução.
+14032=O Windows Installer está atualizando o WSA-Next para {}. O WSA-Next abrirá de novo ao terminar.
 
 # Dialogs
 15000=Versão personalizada
@@ -222,6 +226,7 @@
 16032=Mudando para a nova versão
 16033=O WSA está registrado para o usuário do Windows {} a partir de {}. O Windows permite que apenas um usuário por vez registre um WSA descompactado: desinstale-o primeiro nessa conta (os dados do Android podem ser mantidos) e depois instale-o aqui.
 16034=O WSA está em execução para o usuário do Windows {}. Feche-o nessa conta (Configurações do WSA, Desligar) e instale novamente.
+16035=A versão {} requer o WSA-Next {} ou mais recente: atualize o WSA-Next primeiro.
 
 # Log
 17000={} {} iniciado.
@@ -280,6 +285,7 @@
 17053=WSA-Next {} instalado para o usuário do Windows {}. O WSA continua registrado apenas para esse usuário: o Windows permite que apenas um usuário por vez registre um pacote descompactado.
 17054=O WSA está registrado para o usuário do Windows {} a partir de {}: seus arquivos e o que ele precisa no Windows permanecem. Remova-o nessa conta.
 17055=As configurações do Android estão no menu Iniciar: {}
+17056=Baixando o instalador do WSA-Next {} ({})
 
 # Errors
 18000=Somente endereços https:// são compatíveis (http:// somente para localhost).
@@ -308,6 +314,7 @@
 18025=Agendador de Tarefas
 18026=Iniciando a ponte Bluetooth
 18027=Iniciando a instalação do WSA-Next
+18028=O instalador do WSA-Next baixado não está assinado pelo editor do WSA-Next. Ele foi excluído e não foi iniciado.
 18030=Memória insuficiente para descompactar.
 18031=Dados compactados corrompidos ({}).
 18032=Os dados compactados terminam cedo demais.
@@ -338,3 +345,5 @@
 19017=Registre este PC no Google Play
 19018=Necessário uma vez após uma nova instalação. Clique aqui: o ID do dispositivo é copiado e a página do Google é aberta. Faça login, cole o ID e toque em Registrar; abra a Play Store novamente alguns minutos depois.
 19019=Registrar no Google Play…
+19020=O WSA-Next {} está disponível
+19021=A versão {} do Android está disponível

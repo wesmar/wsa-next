@@ -104,17 +104,32 @@ Result<Manifest> ParseManifest(std::string_view utf8, const std::wstring& url) {
         m.components.push_back(std::move(c));
     }
     if (m.components.empty()) return Fail(Text::Format(IDS_MANIFEST_INVALID, L"no components"));
+
+    // WSA-Next Setup: an entry that is not complete is left out, the release itself stays usable.
+    if (const Json::Value& app = root[L"app"]; app.IsObject()) {
+        AppRelease a;
+        a.version = app.StringOr(L"version");
+        a.url = app.StringOr(L"url");
+        a.size = app[L"size"].UInt().value_or(0);
+        a.sha256 = app.StringOr(L"sha256");
+        std::ranges::transform(a.sha256, a.sha256.begin(), [](wchar_t ch) { return static_cast<wchar_t>(std::towlower(ch)); });
+        a.minimum = app.StringOr(L"minimum");
+        if (!a.version.empty() && !a.url.empty() && a.size && IsHex64(a.sha256)) {
+            a.url = ResolveUrl(url, a.url);
+            m.app = std::move(a);
+        }
+    }
     return m;
 }
 
-Result<Manifest> LoadManifest(const std::wstring& url, std::stop_token stop) {
-    auto body = Net::FetchText(url, 1u << 20, stop);
+Result<Manifest> LoadManifest(const std::wstring& url, std::stop_token stop, unsigned long connectMs, unsigned long ioMs) {
+    auto body = Net::FetchText(url, 1u << 20, stop, connectMs, ioMs);
     if (!body) return Fail(body.error());
     auto manifest = ParseManifest(*body, url);
     if (!manifest) return manifest;
     manifest->raw = std::move(*body);
     // The signature: absent or unreachable means an unofficial release, not a failure.
-    if (auto catalog = Net::FetchText(ResolveUrl(url, Release::kCatalogAsset), 1u << 20, stop)) {
+    if (auto catalog = Net::FetchText(ResolveUrl(url, Release::kCatalogAsset), 1u << 20, stop, connectMs, ioMs)) {
         manifest->catalog = std::move(*catalog);
         manifest->official = Release::Vouches(manifest->catalog, manifest->raw);
     }

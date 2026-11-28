@@ -62,6 +62,8 @@
 11036=Do uzamčení Windows
 11037=Nastavení Androidu…
 11038=Nastavení Androidu
+11039=Aktualizovat WSA-Next…
+11040=Automaticky kontrolovat aktualizace
 
 # Buttons and labels
 12000=Nainstalovat
@@ -72,6 +74,7 @@
 12005=Protokol
 12006=Přispět
 12007=Zaregistrovat…
+12008=Aktualizovat aplikaci
 12010=Android 15 pro Windows
 12011=Tento počítač
 12012=Součásti
@@ -162,6 +165,7 @@
 14029=ID zkopírováno - na stránce Googlu: přihlaste se, vložte (Ctrl+V), Registrovat.
 14030=Spouštím Android - stránka Googlu se otevře, jakmile předá ID.
 14031=Služba WSA-Next na pozadí neběží.
+14032=Instalační služba systému Windows aktualizuje WSA-Next na verzi {}. Po dokončení se WSA-Next znovu otevře.
 
 # Dialogs
 15000=Vlastní verze
@@ -222,6 +226,7 @@
 16032=Přepínání na novou verzi
 16033=WSA je registrován pro uživatele Windows {} ze složky {}. Windows dovoluje registrovat rozbalený WSA vždy jen jednomu uživateli: nejprve ho na tom účtu odinstalujte (data Androidu lze zachovat), pak ho nainstalujte zde.
 16034=WSA běží pro uživatele Windows {}. Zavřete ho na tom účtu (Nastavení WSA, Vypnout) a instalaci opakujte.
+16035=Vydání {} vyžaduje WSA-Next {} nebo novější: nejprve aktualizujte WSA-Next.
 
 # Log
 17000={} {} spuštěn.
@@ -280,6 +285,7 @@
 17053=WSA-Next {} nainstalován pro uživatele Windows {}. WSA zůstává registrován jen pro tohoto uživatele: Windows dovoluje registrovat rozbalený balíček vždy jen jednomu uživateli.
 17054=WSA je registrován pro uživatele Windows {} ze složky {}: jeho soubory a to, co ve Windows potřebuje, zůstávají. Odeberte ho na tom účtu.
 17055=Nastavení Androidu jsou v nabídce Start: {}
+17056=Stahování instalátoru WSA-Next {} ({})
 
 # Errors
 18000=Podporovány jsou jen adresy https:// (http:// jen pro localhost).
@@ -308,6 +314,7 @@
 18025=Plánovač úloh
 18026=Spouštění mostu Bluetooth
 18027=Spouštění instalátoru WSA-Next
+18028=Stažený instalátor WSA-Next není podepsán vydavatelem WSA-Next. Byl odstraněn a nebyl spuštěn.
 18030=Nedostatek paměti pro rozbalení.
 18031=Poškozená komprimovaná data ({}).
 18032=Komprimovaná data končí příliš brzy.
@@ -338,3 +345,5 @@
 19017=Zaregistrujte tento počítač v Google Play
 19018=Potřeba jednou po nové instalaci. Klikněte sem: ID zařízení se zkopíruje a otevře se stránka Googlu. Přihlaste se, vložte ID a stiskněte Registrovat; za pár minut znovu otevřete Obchod Play.
 19019=Zaregistrovat v Google Play…
+19020=Je k dispozici WSA-Next {}
+19021=Je k dispozici vydání Androidu {}

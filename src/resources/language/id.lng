@@ -62,6 +62,8 @@
 11036=Sampai Windows dikunci
 11037=Setelan Android…
 11038=Setelan Android
+11039=Perbarui WSA-Next…
+11040=Periksa pembaruan secara otomatis
 
 # Buttons and labels
 12000=Instal
@@ -72,6 +74,7 @@
 12005=Log
 12006=Donasi
 12007=Daftarkan…
+12008=Perbarui aplikasi
 12010=Android 15 untuk Windows
 12011=PC ini
 12012=Komponen
@@ -162,6 +165,7 @@
 14029=ID disalin - di halaman Google: masuk, tempel (Ctrl+V), Daftar.
 14030=Menjalankan Android - halaman Google terbuka begitu ID diberikan.
 14031=Layanan latar belakang WSA-Next tidak berjalan.
+14032=Windows Installer sedang memperbarui WSA-Next ke {}. WSA-Next akan terbuka lagi setelah selesai.
 
 # Dialogs
 15000=Rilis kustom
@@ -222,6 +226,7 @@
 16032=Beralih ke rilis baru
 16033=WSA terdaftar untuk pengguna Windows {} dari {}. Windows hanya mengizinkan satu pengguna pada satu waktu untuk mendaftarkan WSA yang tidak dikemas: copot pemasangannya dulu di akun tersebut (data Android dapat dipertahankan), lalu pasang di sini.
 16034=WSA sedang berjalan untuk pengguna Windows {}. Tutup di akun tersebut (Pengaturan WSA, Matikan) lalu pasang lagi.
+16035=Rilis {} memerlukan WSA-Next {} atau yang lebih baru: perbarui WSA-Next terlebih dahulu.
 
 # Log
 17000={} {} dimulai.
@@ -280,6 +285,7 @@
 17053=WSA-Next {} terpasang untuk pengguna Windows {}. WSA tetap terdaftar hanya untuk pengguna itu: Windows hanya mengizinkan satu pengguna pada satu waktu untuk mendaftarkan paket yang tidak dikemas.
 17054=WSA terdaftar untuk pengguna Windows {} dari {}: filenya dan yang dibutuhkannya di Windows tetap ada. Hapus di akun tersebut.
 17055=Setelan Android ada di menu Start: {}
+17056=Mengunduh Penyiapan WSA-Next {} ({})
 
 # Errors
 18000=Hanya alamat https:// yang didukung (http:// hanya untuk localhost).
@@ -308,6 +314,7 @@
 18025=Task Scheduler
 18026=Memulai jembatan Bluetooth
 18027=Menjalankan penyiapan WSA-Next
+18028=Penyiapan WSA-Next yang diunduh tidak ditandatangani oleh penerbit WSA-Next. File itu dihapus dan tidak dijalankan.
 18030=Memori tidak cukup untuk mengekstrak.
 18031=Data terkompresi rusak ({}).
 18032=Data terkompresi berakhir terlalu cepat.
@@ -338,3 +345,5 @@
 19017=Daftarkan PC ini ke Google Play
 19018=Diperlukan sekali setelah pemasangan baru. Klik di sini: ID perangkat disalin dan halaman Google terbuka. Masuk, tempel ID, lalu tekan Daftar; buka Play Store lagi beberapa menit kemudian.
 19019=Daftar ke Google Play…
+19020=WSA-Next {} tersedia
+19021=Rilis Android {} tersedia

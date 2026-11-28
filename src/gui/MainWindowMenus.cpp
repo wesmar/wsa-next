@@ -2,6 +2,7 @@
 // Main window: menu bar, context menus, accelerators and the enabled / checked state of items.
 #include "gui/MainWindow.h"
 #include "gui/MainWindowDetail.h"
+#include "core/Update.h"
 #include "host/Host.h"
 #include "support/Text.h"
 #include <format>
@@ -79,6 +80,9 @@ void MainWindow::BuildMenus() {
     }
 
     HMENU help = m.AddMenu(Text::Get(IDS_MENU_HELP));
+    item(help, CmdUpdateApp, IDS_MI_UPDATE_APP);
+    item(help, CmdUpdateCheck, IDS_MI_UPDATE_CHECK);
+    m.AddSeparator(help);
     item(help, CmdHelpCli, IDS_MI_HELP_CLI, L"F1");
     item(help, CmdAbout, IDS_MI_ABOUT);
 
@@ -118,6 +122,7 @@ void MainWindow::ApplyMenuState(HMENU menu) const {
             checked = !automatic && index < m_languages.size() && m_languages[index].code == language;
         } else {
             switch (id) {
+            case CmdUpdateCheck: checked = Core::Update::AutomaticCheck(); break;
             case CmdSourceGitHub: checked = source == L"github"; break;
             case CmdSourceMirror: checked = source == L"mirror"; break;
             case CmdSourceLocal: checked = source == L"local"; break;

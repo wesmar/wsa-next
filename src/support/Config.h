@@ -7,7 +7,10 @@
 namespace WN::Config {
 
 inline constexpr wchar_t kAppTitle[] = L"WSA-Next";
-inline constexpr wchar_t kAppVersion[] = L"0.1.0";
+// Major.minor.patch, compared field by field (core/Update.h) and as WSA-Next Setup's ProductVersion
+// (Windows Installer compares three fields, the third at most 65535): every published build of
+// WSA-Next.exe raises the patch number, or the update does not reach anyone.
+inline constexpr wchar_t kAppVersion[] = L"0.1.1";
 inline constexpr wchar_t kCopyright[] = L"© 2026 Marek Wesołowski - wesmar";
 inline constexpr wchar_t kExeName[] = L"WSA-Next.exe";
 inline constexpr wchar_t kRegKey[] = L"Software\\KVC\\WSA-Next";

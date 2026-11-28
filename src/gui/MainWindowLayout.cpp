@@ -2,7 +2,6 @@
 // Main window: layout, window placement and painting.
 #include "gui/MainWindow.h"
 #include "gui/MainWindowDetail.h"
-#include <dwmapi.h>
 #include "support/Settings.h"
 #include "support/Signature.h"
 #include "support/Text.h"
@@ -41,7 +40,8 @@ float MainWindow::ContentHeight(bool withLog) const {
 
 float MainWindow::ButtonWidth() const {
     float widest = m_fonts.F(kButtonW);
-    for (UINT id : {CmdCancel, CmdLaunch, CmdInstall, CmdChangeFolder, CmdBtToggle}) {
+    // One width for every button of the right-hand columns, the two on the menu bar's line included.
+    for (UINT id : {CmdCancel, CmdLaunch, CmdInstall, CmdChangeFolder, CmdBtToggle, CmdUpdateApp, CmdSupport}) {
         wchar_t text[128]{};
         GetWindowTextW(GetDlgItem(m_hwnd, static_cast<int>(id)), text, static_cast<int>(std::size(text)));
         const auto look = m_looks.find(id);
@@ -65,23 +65,14 @@ void MainWindow::Layout() {
     };
 
     m_menu.Layout(f.F(6), f.F(4), f.F(kBarH));
-    // "Support" on the menu bar's line: centred on the menu's text, as far above it as below,
-    // under the window's buttons - from the left edge of "minimize" to the cards' right edge, the
-    // same in every language (wider only for a label that needs more).
+    // On the menu bar's line, centred on the menu's text: "Support" right above the card's right-hand
+    // column (Change, Bluetooth, Repair) and, while a newer WSA-Next is out, "Update app" above the
+    // next one (Launch) - the same width and the same edges, in every language.
     {
-        wchar_t text[64]{};
-        GetWindowTextW(GetDlgItem(m_hwnd, CmdSupport), text, static_cast<int>(std::size(text)));
-        const float needed = std::ceil(TextWidth(f, Font::Body, text) + f.F(14 + 8) + f.F(24));
-        float left = W - m - needed;
-        RECT buttons{}, window{};
-        POINT origin{};
-        if (SUCCEEDED(DwmGetWindowAttribute(m_hwnd, DWMWA_CAPTION_BUTTON_BOUNDS, &buttons, sizeof buttons)) && buttons.right > buttons.left &&
-            GetWindowRect(m_hwnd, &window) && ClientToScreen(m_hwnd, &origin)) {
-            // Window-relative bounds -> client coordinates.
-            left = std::min(left, static_cast<float>(buttons.left - (origin.x - window.left)));
-        }
-        const float h = f.F(26), mid = f.F(4 + kBarH / 2);
-        place(CmdSupport, {left, mid - h / 2, W - m, mid + h / 2});
+        const float h = f.F(26), mid = f.F(4 + kBarH / 2), right = W - m - p;
+        place(CmdSupport, {right - bw, mid - h / 2, right, mid + h / 2});
+        place(CmdUpdateApp, {right - 2 * bw - gap, mid - h / 2, right - bw - gap, mid + h / 2});
+        ShowWindow(GetDlgItem(m_hwnd, CmdUpdateApp), m_appUpdate.empty() ? SW_HIDE : SW_SHOWNA);
     }
     float y = f.F(4 + kBarH + 6);
 

@@ -62,6 +62,8 @@
 11036=Windows kilitlenene kadar
 11037=Android ayarları…
 11038=Android Ayarları
+11039=WSA-Next'i güncelle…
+11040=Güncellemeleri otomatik denetle
 
 # Buttons and labels
 12000=Yükle
@@ -72,6 +74,7 @@
 12005=Günlük
 12006=Bağış yap
 12007=Kaydet…
+12008=Uygulamayı güncelle
 12010=Windows için Android 15
 12011=Bu bilgisayar
 12012=Bileşenler
@@ -162,6 +165,7 @@
 14029=Kimlik kopyalandı - Google sayfasında: oturum açın, yapıştırın (Ctrl+V), Kaydet.
 14030=Android başlatılıyor - kimliği verdiğinde Google sayfası açılacak.
 14031=WSA-Next arka plan hizmeti çalışmıyor.
+14032=Windows Installer, WSA-Next'i {} sürümüne güncelliyor. İşlem bitince WSA-Next yeniden açılır.
 
 # Dialogs
 15000=Özel sürüm
@@ -222,6 +226,7 @@
 16032=Yeni sürüme geçiliyor
 16033=WSA, {} Windows kullanıcısı için {} konumundan kayıtlı. Windows, paketten çıkarılmış bir WSA'yı aynı anda yalnızca bir kullanıcının kaydetmesine izin verir: önce o hesapta kaldırın (Android verileri korunabilir), sonra burada yükleyin.
 16034=WSA, {} Windows kullanıcısı için çalışıyor. O hesapta kapatın (WSA Ayarları, Kapat) ve yüklemeyi yeniden başlatın.
+16035={} sürümü WSA-Next {} veya daha yenisini gerektirir: önce WSA-Next'i güncelleyin.
 
 # Log
 17000={} {} başlatıldı.
@@ -280,6 +285,7 @@
 17053=WSA-Next {}, {} Windows kullanıcısı için yüklendi. WSA yalnızca o kullanıcı için kayıtlı kalır: Windows, paketten çıkarılmış bir paketi aynı anda yalnızca bir kullanıcının kaydetmesine izin verir.
 17054=WSA, {} Windows kullanıcısı için {} konumundan kayıtlı: dosyaları ve Windows’ta ihtiyaç duyduğu şeyler kalır. Onu o hesapta kaldırın.
 17055=Android ayarları Başlat menüsünde: {}
+17056=WSA-Next Kurulumu {} indiriliyor ({})
 
 # Errors
 18000=Yalnızca https:// adresleri desteklenir (http:// yalnızca localhost için).
@@ -308,6 +314,7 @@
 18025=Görev Zamanlayıcı
 18026=Bluetooth köprüsü başlatılıyor
 18027=WSA-Next Kurulumu başlatılıyor
+18028=İndirilen WSA-Next Kurulumu, WSA-Next yayıncısı tarafından imzalanmamış. Silindi ve başlatılmadı.
 18030=Açmak için yeterli bellek yok.
 18031=Sıkıştırılmış veri bozuk ({}).
 18032=Sıkıştırılmış veri çok erken bitiyor.
@@ -338,3 +345,5 @@
 19017=Bu bilgisayarı Google Play'e kaydedin
 19018=Yeni bir yüklemeden sonra bir kez gereklidir. Buraya tıklayın: cihaz kimliği kopyalanır ve Google'ın sayfası açılır. Oturum açın, kimliği yapıştırın ve Kaydol'a basın; birkaç dakika sonra Play Store'u yeniden açın.
 19019=Google Play'e kaydet…
+19020=WSA-Next {} kullanılabilir
+19021=Android sürümü {} kullanılabilir

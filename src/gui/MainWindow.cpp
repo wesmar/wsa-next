@@ -262,6 +262,7 @@ LRESULT MainWindow::Handle(UINT message, WPARAM wParam, LPARAM lParam) {
         auto done = TakeOwned<DoneMessage>(lParam);
         if (m_worker.joinable()) m_worker.join();  // the worker has finished its job by now
         if (done->stop) OnStopDone(*done->stop);
+        else if (done->setup) OnSetupDone(done->ok, done->canceled, done->error);
         else if (done->removal) OnUninstallDone(done->ok, done->everything, done->restart, done->leftovers, done->error);
         else OnInstallDone(done->ok, done->canceled, done->restart, done->error);
         return 0;

@@ -2,6 +2,7 @@
 #include "host/Tray.h"
 #include "bluetooth/Bridge.h"
 #include "bluetooth/Log.h"
+#include "core/Update.h"
 #include "host/Guest.h"
 #include "host/Host.h"
 #include "host/Registration.h"
@@ -11,8 +12,13 @@
 #include "support/Text.h"
 #include <shellapi.h>
 #include <commctrl.h>
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <cstring>
 #include <memory>
 #include <string>
+#include <vector>
 
 #pragma comment(lib, "comctl32.lib")
 
@@ -26,7 +32,7 @@ constexpr UINT kRefresh = WM_APP + 2;      // from the host: the state changed
 constexpr UINT kNotice = WM_APP + 3;       // from a bridge: a notification to show
 constexpr UINT kRegistration = WM_APP + 4; // from the registration helper: offer Google Play registration
 
-enum : UINT { CmdOpen = 1, CmdAndroidSettings, CmdRegister, CmdBluetooth, CmdRoot, CmdSu, CmdStopWsa, CmdLog, CmdHide, CmdExit };
+enum : UINT { CmdOpen = 1, CmdUpdate, CmdAndroidSettings, CmdRegister, CmdBluetooth, CmdRoot, CmdSu, CmdStopWsa, CmdLog, CmdHide, CmdExit };
 
 struct Notice {
     std::wstring title, text;
@@ -55,6 +61,59 @@ bool OnRegistration() {
 template <std::size_t N>
 void Copy(wchar_t (&field)[N], const std::wstring& text) {
     wcsncpy_s(field, text.c_str(), _TRUNCATE);
+}
+
+// The icon with an orange dot in its lower right corner, cut free from the picture by a thin
+// transparent ring so that it reads on any taskbar. Null when the icon has no 32-bit image.
+HICON WithDot(HICON base) {
+    ICONINFO info{};
+    if (!GetIconInfo(base, &info)) return nullptr;
+    BITMAP bm{};
+    const bool sized = info.hbmColor && GetObjectW(info.hbmColor, sizeof bm, &bm) && bm.bmBitsPixel == 32;
+    const int w = sized ? bm.bmWidth : 0, h = sized ? bm.bmHeight : 0;
+    std::vector<std::uint32_t> pixels(static_cast<std::size_t>(w) * static_cast<std::size_t>(h));
+    BITMAPINFO bi{};
+    bi.bmiHeader = {sizeof(BITMAPINFOHEADER), w, -h, 1, 32, BI_RGB};
+    bool read = false;
+    if (sized) {
+        const HDC dc = GetDC(nullptr);
+        read = GetDIBits(dc, info.hbmColor, 0, static_cast<UINT>(h), pixels.data(), &bi, DIB_RGB_COLORS) == h;
+        ReleaseDC(nullptr, dc);
+    }
+    if (info.hbmColor) DeleteObject(info.hbmColor);
+    if (info.hbmMask) DeleteObject(info.hbmMask);
+    if (!read) return nullptr;
+
+    const float r = static_cast<float>(w) * 0.21f, ring = r + std::max(1.0f, static_cast<float>(w) * 0.07f);
+    const float cx = static_cast<float>(w) - r - 0.5f, cy = static_cast<float>(h) - r - 0.5f;
+    constexpr float dotR = 0xF7, dotG = 0x63, dotB = 0x0C;  // Windows' attention orange
+    for (int y = 0; y < h; ++y) {
+        for (int x = 0; x < w; ++x) {
+            const float d = std::hypot(static_cast<float>(x) + 0.5f - cx, static_cast<float>(y) + 0.5f - cy);
+            if (d >= ring + 0.5f) continue;
+            std::uint32_t& p = pixels[static_cast<std::size_t>(y) * static_cast<std::size_t>(w) + static_cast<std::size_t>(x)];
+            const float cut = std::clamp(ring + 0.5f - d, 0.0f, 1.0f), cover = std::clamp(r + 0.5f - d, 0.0f, 1.0f);
+            const float a = static_cast<float>(p >> 24) / 255.0f * (1.0f - cut);  // the picture, cut around the dot
+            const float outA = cover + a * (1.0f - cover);
+            auto mix = [&](float dot, std::uint32_t shift) {
+                const float picture = static_cast<float>((p >> shift) & 0xFF);
+                return outA > 0 ? static_cast<std::uint32_t>(std::lround((dot * cover + picture * a * (1.0f - cover)) / outA)) : 0u;
+            };
+            p = (static_cast<std::uint32_t>(std::lround(outA * 255.0f)) << 24) | (mix(dotR, 16) << 16) | (mix(dotG, 8) << 8) | mix(dotB, 0);
+        }
+    }
+    void* bits = nullptr;
+    const HBITMAP color = CreateDIBSection(nullptr, &bi, DIB_RGB_COLORS, &bits, nullptr, 0);
+    const HBITMAP mask = CreateBitmap(w, h, 1, 1, nullptr);
+    HICON icon = nullptr;
+    if (color && mask && bits) {
+        std::memcpy(bits, pixels.data(), pixels.size() * sizeof(std::uint32_t));
+        ICONINFO dotted{TRUE, 0, 0, mask, color};
+        icon = CreateIconIndirect(&dotted);
+    }
+    if (color) DeleteObject(color);
+    if (mask) DeleteObject(mask);
+    return icon;
 }
 
 }  // namespace
@@ -172,7 +231,26 @@ void Tray::AddIcon() {
     data.uVersion = NOTIFYICON_VERSION_4;
     Shell_NotifyIconW(NIM_SETVERSION, &data);
     if (data.hIcon) DestroyIcon(data.hIcon);
+    m_dot = false;  // the icon as added; Refresh puts the dot back
     Refresh();
+}
+
+void Tray::SetIcon(bool dot) {
+    NOTIFYICONDATAW data{sizeof data};
+    data.hWnd = m_hwnd;
+    data.uID = kIconId;
+    data.uFlags = NIF_ICON;
+    HICON base = nullptr;
+    LoadIconMetric(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(IDI_APP), LIM_SMALL, &base);
+    data.hIcon = dot && base ? WithDot(base) : nullptr;
+    if (!data.hIcon) {
+        data.hIcon = base;
+        base = nullptr;
+        dot = false;
+    }
+    if (data.hIcon && Shell_NotifyIconW(NIM_MODIFY, &data)) m_dot = dot;
+    if (data.hIcon) DestroyIcon(data.hIcon);
+    if (base) DestroyIcon(base);
 }
 
 void Tray::ShowBalloon(const std::wstring& title, const std::wstring& text) {
@@ -186,12 +264,18 @@ void Tray::ShowBalloon(const std::wstring& title, const std::wstring& text) {
     Shell_NotifyIconW(NIM_MODIFY, &data);
 }
 
-// The tooltip: what runs. Read on each change notice (WSA's VM, the bridges, the settings).
+// The tooltip: what runs, and an update first (the tooltip is cut at 127 characters). Read on each
+// change notice (WSA's VM, the bridges, the settings, the look for updates).
 void Tray::Refresh() {
     const bool android = Guest::FindWsaVm().has_value();
     const UINT bluetooth = !BluetoothEnabled() ? IDS_TRAY_BT_OFF : Bt::AndroidConnected() ? IDS_TRAY_BT_CONNECTED : IDS_TRAY_BT_ON;
-    const std::wstring tip = L"WSA-Next\n" + Text::Get(android ? IDS_TRAY_ANDROID_ON : IDS_TRAY_ANDROID_OFF) + L"\n" + Text::Get(bluetooth) + L"\n" +
-                             Text::Get(ElevationEnabled() ? IDS_TRAY_ROOT_ON : IDS_TRAY_ROOT_OFF);
+    const Core::Update::Pending pending = Core::Update::Available(Core::Update::SavedFolder());
+    std::wstring tip = L"WSA-Next\n";
+    if (!pending.app.empty()) tip += Text::Format(IDS_TRAY_APP_AVAILABLE, pending.app) + L"\n";
+    if (!pending.release.empty()) tip += Text::Format(IDS_TRAY_RELEASE_AVAILABLE, pending.release) + L"\n";
+    tip += Text::Get(android ? IDS_TRAY_ANDROID_ON : IDS_TRAY_ANDROID_OFF) + L"\n" + Text::Get(bluetooth) + L"\n" +
+           Text::Get(ElevationEnabled() ? IDS_TRAY_ROOT_ON : IDS_TRAY_ROOT_OFF);
+    if (pending.Any() != m_dot) SetIcon(pending.Any());
     NOTIFYICONDATAW data{sizeof data};
     data.hWnd = m_hwnd;
     data.uID = kIconId;
@@ -210,6 +294,12 @@ void Tray::ShowMenu() {
     };
     item(CmdOpen, IDS_TRAY_OPEN);
     SetMenuDefaultItem(menu, CmdOpen, FALSE);
+    // An update: opens the window, which shows it and does it (with its progress).
+    const Core::Update::Pending pending = Core::Update::Available(Core::Update::SavedFolder());
+    if (!pending.app.empty()) AppendMenuW(menu, MF_STRING, CmdUpdate, (Text::Format(IDS_TRAY_APP_AVAILABLE, pending.app) + L"\x2026").c_str());
+    if (!pending.release.empty())
+        AppendMenuW(menu, MF_STRING, CmdUpdate, (Text::Format(IDS_TRAY_RELEASE_AVAILABLE, pending.release) + L"\x2026").c_str());
+    if (pending.Any()) AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
     item(CmdAndroidSettings, IDS_MI_ANDROID_SETTINGS);
     if (!PendingRegistrationId().empty()) item(CmdRegister, IDS_TRAY_REGISTER);
     AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
@@ -233,6 +323,7 @@ void Tray::ShowMenu() {
 void Tray::Command(UINT id) {
     switch (id) {
     case CmdOpen:
+    case CmdUpdate:
         if (HWND existing = FindWindowW(L"WSANext.MainWindow", nullptr)) {
             if (IsIconic(existing)) ShowWindow(existing, SW_RESTORE);
             SetForegroundWindow(existing);

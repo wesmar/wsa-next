@@ -34,6 +34,8 @@ enum Command : UINT {
     CmdAndroidSettings,  // Android > Android settings (com.android.settings)
     CmdRegister,  // Google Play registration: Android > menu and the button in the "This PC" card
     CmdSupport,   // the "Support" button on the menu bar's line
+    CmdUpdateApp,    // Help > Update WSA-Next, and the button left of "Support" while a newer one is out
+    CmdUpdateCheck,  // Help > Check for updates automatically (the background host's look, core/Update.h)
     CmdLanguageAuto = 1100, CmdLanguageFirst,  // View > language: automatic, then one per available language
     CmdLanguageLast = 1199,
 };
@@ -49,6 +51,7 @@ struct DoneMessage {
     bool removal = false, everything = false;  // an uninstallation (Core::Uninstall) instead of Core::Run
     std::size_t leftovers = 0;                 // removal: items that could not be removed
     std::optional<Guest::VmStop> stop;         // stopping WSA (Install::Stop) instead
+    bool setup = false;                        // WSA-Next's own update (Core::Update) instead
 };
 struct RefreshMessage {
     Core::SystemInfo system;
@@ -95,6 +98,8 @@ inline const ButtonSpec kButtons[] = {
     {CmdInstall, IDS_BTN_INSTALL, {ButtonKind::Accent, Icon::Download}},
     {CmdRegister, IDS_BTN_REGISTER, {ButtonKind::Standard, Icon::OpenInNew}},  // in the "This PC" card
     {CmdExpand, IDS_BTN_LOG, {ButtonKind::Expander, 0, false}},
+    // Shown only while a newer WSA-Next is out: on the menu bar's line, left of "Support".
+    {CmdUpdateApp, IDS_BTN_APP_UPDATE, {ButtonKind::Accent, Icon::Sync}},
     // Last in the Tab order; on the window background, a quiet button: its heart is grey like the
     // other icons and turns sponsor pink only under the mouse (green stays for actions and status).
     {CmdSupport, IDS_BTN_SUPPORT, {ButtonKind::Standard, Icon::HeartFill, false, false, {}, {}, {}, Color::Support}},

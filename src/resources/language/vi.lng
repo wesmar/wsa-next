@@ -62,6 +62,8 @@
 11036=Đến khi khóa Windows
 11037=Cài đặt Android…
 11038=Cài đặt Android
+11039=Cập nhật WSA-Next…
+11040=Tự động kiểm tra bản cập nhật
 
 # Buttons and labels
 12000=Cài đặt
@@ -72,6 +74,7 @@
 12005=Nhật ký
 12006=Ủng hộ
 12007=Đăng ký…
+12008=Cập nhật ứng dụng
 12010=Android 15 cho Windows
 12011=Máy tính này
 12012=Thành phần
@@ -162,6 +165,7 @@
 14029=Đã sao chép ID - trên trang Google: đăng nhập, dán (Ctrl+V), Đăng ký.
 14030=Đang khởi động Android - trang Google sẽ mở khi nó cung cấp ID.
 14031=Dịch vụ nền của WSA-Next không chạy.
+14032=Windows Installer đang cập nhật WSA-Next lên {}. WSA-Next sẽ mở lại khi hoàn tất.
 
 # Dialogs
 15000=Bản phát hành tùy chỉnh
@@ -222,6 +226,7 @@
 16032=Đang chuyển sang bản phát hành mới
 16033=WSA được đăng ký cho người dùng Windows {} từ {}. Windows chỉ cho phép một người dùng mỗi lúc đăng ký WSA đã giải nén: hãy gỡ cài đặt trên tài khoản đó trước (có thể giữ dữ liệu Android), rồi cài đặt tại đây.
 16034=WSA đang chạy cho người dùng Windows {}. Hãy đóng nó trên tài khoản đó (Cài đặt WSA, Tắt) rồi cài đặt lại.
+16035=Bản phát hành {} cần WSA-Next {} trở lên: hãy cập nhật WSA-Next trước.
 
 # Log
 17000={} {} đã khởi động.
@@ -280,6 +285,7 @@
 17053=Đã cài đặt WSA-Next {} cho người dùng Windows {}. WSA vẫn chỉ được đăng ký cho người dùng đó: Windows chỉ cho phép một người dùng mỗi lúc đăng ký gói đã giải nén.
 17054=WSA được đăng ký cho người dùng Windows {} từ {}: các tệp của nó và những gì nó cần trong Windows được giữ lại. Hãy gỡ bỏ nó trên tài khoản đó.
 17055=Cài đặt Android có trong menu Start: {}
+17056=Đang tải xuống Trình cài đặt WSA-Next {} ({})
 
 # Errors
 18000=Chỉ hỗ trợ địa chỉ https:// (http:// chỉ cho localhost).
@@ -308,6 +314,7 @@
 18025=Trình lập lịch tác vụ
 18026=Đang khởi động cầu nối Bluetooth
 18027=Đang khởi động trình cài đặt WSA-Next
+18028=Trình cài đặt WSA-Next đã tải xuống không được nhà phát hành WSA-Next ký. Tệp đã bị xóa và không được chạy.
 18030=Không đủ bộ nhớ để giải nén.
 18031=Dữ liệu nén bị hỏng ({}).
 18032=Dữ liệu nén kết thúc quá sớm.
@@ -338,3 +345,5 @@
 19017=Đăng ký PC này với Google Play
 19018=Cần một lần sau khi cài đặt mới. Nhấp vào đây: ID thiết bị được sao chép và trang của Google sẽ mở. Đăng nhập, dán ID và nhấn Đăng ký; mở lại Cửa hàng Play sau vài phút.
 19019=Đăng ký với Google Play…
+19020=Đã có WSA-Next {}
+19021=Đã có bản phát hành Android {}

@@ -11,7 +11,9 @@
 namespace WN::Net {
 
 // Small text resource (the manifest), at most `limit` bytes, returned as received (UTF-8).
-Result<std::string> FetchText(const std::wstring& url, std::size_t limit, std::stop_token stop);
+// `connectMs`: name lookup and connection; `ioMs`: each send and receive.
+Result<std::string> FetchText(const std::wstring& url, std::size_t limit, std::stop_token stop, unsigned long connectMs = 10000,
+                              unsigned long ioMs = 20000);
 
 // Downloads `url` into `part`, resuming a partial file with an HTTP range request, retrying up to
 // `attempts` times after network errors. The finished file must have `expectedSize` bytes and the

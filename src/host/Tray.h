@@ -1,7 +1,8 @@
 // WSA-Next © 2026 Marek Wesołowski - wesmar
 // The background host's icon in the notification area: the state at a glance (Android, Bluetooth,
 // root), quick switches, and a notification whenever an Android app was granted root - so every
-// grant stays visible after the fact. Its own thread and a hidden window; it reacts to the host's
+// grant stays visible after the fact. A newer WSA-Next or Android release puts a small dot on the
+// icon (no notification). Its own thread and a hidden window; it reacts to the host's
 // change notices and never polls. The host runs elevated: the icon's callback message and
 // "TaskbarCreated" (Explorer restarted) are let through the message filter explicitly.
 #pragma once
@@ -23,6 +24,7 @@ private:
     static LRESULT CALLBACK Proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
     LRESULT Handle(UINT message, WPARAM wParam, LPARAM lParam);
     void AddIcon();
+    void SetIcon(bool dot);
     void ShowBalloon(const std::wstring& title, const std::wstring& text);
     void Refresh();
     void ShowMenu();
@@ -32,6 +34,7 @@ private:
     HWND m_hwnd = nullptr;
     UINT m_taskbarCreated = 0;
     bool m_registrationShown = false;  // the last notification offers Google Play registration
+    bool m_dot = false;                // the icon shows that an update is available
     std::jthread m_thread;
 };
 

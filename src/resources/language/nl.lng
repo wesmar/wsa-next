@@ -62,6 +62,8 @@
 11036=Tot Windows wordt vergrendeld
 11037=Android-instellingen…
 11038=Android-instellingen
+11039=WSA-Next bijwerken…
+11040=Automatisch op updates controleren
 
 # Buttons and labels
 12000=Installeren
@@ -72,6 +74,7 @@
 12005=Logboek
 12006=Doneren
 12007=Registreren…
+12008=App bijwerken
 12010=Android 15 voor Windows
 12011=Deze pc
 12012=Onderdelen
@@ -162,6 +165,7 @@
 14029=ID gekopieerd - op de pagina van Google: aanmelden, plakken (Ctrl+V), Registreren.
 14030=Android start - de pagina van Google opent zodra het de ID doorgeeft.
 14031=De achtergrondservice van WSA-Next draait niet.
+14032=Windows Installer werkt WSA-Next bij naar {}. Daarna wordt WSA-Next opnieuw geopend.
 
 # Dialogs
 15000=Eigen release
@@ -222,6 +226,7 @@
 16032=Overschakelen naar de nieuwe release
 16033=WSA is geregistreerd voor de Windows-gebruiker {} vanuit {}. Windows staat maar één gebruiker tegelijk toe een uitgepakt WSA te registreren: verwijder het eerst op dat account (de Android-gegevens kunnen behouden blijven) en installeer het daarna hier.
 16034=WSA draait voor de Windows-gebruiker {}. Sluit het op dat account (WSA-instellingen, Uitschakelen) en installeer opnieuw.
+16035=Release {} vereist WSA-Next {} of nieuwer: werk eerst WSA-Next bij.
 
 # Log
 17000={} {} gestart.
@@ -280,6 +285,7 @@
 17053=WSA-Next {} geïnstalleerd voor de Windows-gebruiker {}. WSA blijft alleen voor die gebruiker geregistreerd: Windows staat maar één gebruiker tegelijk toe een uitgepakt pakket te registreren.
 17054=WSA is geregistreerd voor de Windows-gebruiker {} vanuit {}: de bestanden en wat het in Windows nodig heeft, blijven. Verwijder het op dat account.
 17055=De Android-instellingen staan in het Startmenu: {}
+17056=WSA-Next Setup {} downloaden ({})
 
 # Errors
 18000=Alleen https://-adressen worden ondersteund (http:// alleen voor localhost).
@@ -308,6 +314,7 @@
 18025=Taakplanner
 18026=Bluetooth-brug starten
 18027=WSA-Next Setup starten
+18028=De gedownloade WSA-Next Setup is niet ondertekend door de uitgever van WSA-Next. Het bestand is verwijderd en niet gestart.
 18030=Te weinig geheugen om uit te pakken.
 18031=Beschadigde gecomprimeerde gegevens ({}).
 18032=De gecomprimeerde gegevens eindigen te vroeg.
@@ -338,3 +345,5 @@
 19017=Registreer deze pc bij Google Play
 19018=Eenmalig nodig na een nieuwe installatie. Klik hier: de apparaat-ID wordt gekopieerd en de pagina van Google opent. Meld je aan, plak de ID en druk op Registreren; open de Play Store een paar minuten later opnieuw.
 19019=Registreren bij Google Play…
+19020=WSA-Next {} is beschikbaar
+19021=Android-release {} is beschikbaar

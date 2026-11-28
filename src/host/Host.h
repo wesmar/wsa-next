@@ -6,6 +6,8 @@
 //   the Bluetooth bridge       while Bluetooth for Android is on (setting "Bluetooth", src/bluetooth)
 //   the elevation bridge       while root for Android apps is on (setting "Elevation"): every
 //                              request confirmed with Windows Hello (src/biometrics)
+//   the look for updates       a newer WSA-Next or Android release (host/Updates.h): a dot on the
+//                              notification-area icon
 // One instance per session (named mutex). The window and the command line control it through
 // named events (stop, reload settings); the Task Scheduler task "WSA-Next" starts it at logon with
 // the highest privileges (both bridges need administrator rights). Closing the window does not
@@ -25,6 +27,7 @@ int RunBackground();
 Result<> Start();    // starts it unless it runs (the caller is elevated, so is the child)
 void Stop();         // asks it to stop and waits until it has
 Result<> Restart();  // from the installed WSA-Next.exe (after an update of it)
+void Reload();       // the running host reads its settings again (and its icon redraws)
 
 // The WSA-Next.exe the host and its logon task run: the installed copy in %ProgramFiles%\WSA-Next
 // (only administrators may change it) when there is one, otherwise this executable.

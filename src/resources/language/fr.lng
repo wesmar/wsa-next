@@ -62,6 +62,8 @@
 11036=Jusqu’au verrouillage de Windows
 11037=Paramètres Android…
 11038=Paramètres Android
+11039=Mettre à jour WSA-Next…
+11040=Rechercher automatiquement les mises à jour
 
 # Buttons and labels
 12000=Installer
@@ -72,6 +74,7 @@
 12005=Journal
 12006=Faire un don
 12007=Enregistrer…
+12008=Mettre à jour l'app
 12010=Android 15 pour Windows
 12011=Ce PC
 12012=Composants
@@ -162,6 +165,7 @@
 14029=ID copié - sur la page de Google : connectez-vous, collez (Ctrl+V), Enregistrer.
 14030=Démarrage d'Android - la page de Google s'ouvre dès qu'il transmet l'ID.
 14031=Le service d'arrière-plan de WSA-Next ne fonctionne pas.
+14032=Windows Installer met à jour WSA-Next vers {}. WSA-Next se rouvrira une fois terminé.
 
 # Dialogs
 15000=Version personnalisée
@@ -222,6 +226,7 @@
 16032=Passage à la nouvelle version
 16033=WSA est enregistré pour l’utilisateur Windows {} depuis {}. Windows ne permet qu’à un seul utilisateur à la fois d’enregistrer un WSA décompressé : désinstallez-le d’abord sur ce compte (les données Android peuvent être conservées), puis installez-le ici.
 16034=WSA est en cours d’exécution pour l’utilisateur Windows {}. Fermez-le sur ce compte (Paramètres WSA, Désactiver) et relancez l’installation.
+16035=La version {} nécessite WSA-Next {} ou plus récent : mettez d'abord WSA-Next à jour.
 
 # Log
 17000={} {} démarré.
@@ -280,6 +285,7 @@
 17053=WSA-Next {} installé pour l’utilisateur Windows {}. WSA reste enregistré pour cet utilisateur seulement : Windows ne permet qu’à un seul utilisateur à la fois d’enregistrer un paquet décompressé.
 17054=WSA est enregistré pour l’utilisateur Windows {} depuis {} : ses fichiers et ce dont il a besoin dans Windows restent. Supprimez-le sur ce compte.
 17055=Les paramètres Android sont dans le menu Démarrer : {}
+17056=Téléchargement du programme d'installation WSA-Next {} ({})
 
 # Errors
 18000=Seules les adresses https:// sont prises en charge (http:// uniquement pour localhost).
@@ -308,6 +314,7 @@
 18025=Planificateur de tâches
 18026=Démarrage du pont Bluetooth
 18027=Démarrage de l’installation de WSA-Next
+18028=Le programme d'installation WSA-Next téléchargé n'est pas signé par l'éditeur de WSA-Next. Il a été supprimé et n'a pas été lancé.
 18030=Mémoire insuffisante pour la décompression.
 18031=Données compressées endommagées ({}).
 18032=Les données compressées se terminent trop tôt.
@@ -338,3 +345,5 @@
 19017=Enregistrez ce PC auprès de Google Play
 19018=Nécessaire une fois après une nouvelle installation. Cliquez ici : l’ID de l’appareil est copié et la page de Google s’ouvre. Connectez-vous, collez l’ID et appuyez sur Enregistrer ; rouvrez le Play Store quelques minutes plus tard.
 19019=Enregistrer auprès de Google Play…
+19020=WSA-Next {} est disponible
+19021=La version Android {} est disponible

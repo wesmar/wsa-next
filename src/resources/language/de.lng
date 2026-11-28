@@ -62,6 +62,8 @@
 11036=Bis Windows gesperrt wird
 11037=Android-Einstellungen…
 11038=Android-Einstellungen
+11039=WSA-Next aktualisieren…
+11040=Automatisch nach Updates suchen
 
 # Buttons and labels
 12000=Installieren
@@ -72,6 +74,7 @@
 12005=Protokoll
 12006=Spenden
 12007=Registrieren…
+12008=App aktualisieren
 12010=Android 15 für Windows
 12011=Dieser PC
 12012=Komponenten
@@ -162,6 +165,7 @@
 14029=ID kopiert - auf der Google-Seite: anmelden, einfügen (Strg+V), Registrieren.
 14030=Android startet - die Google-Seite öffnet sich, sobald es die ID liefert.
 14031=Der Hintergrunddienst von WSA-Next läuft nicht.
+14032=Windows Installer aktualisiert WSA-Next auf {}. Danach öffnet sich WSA-Next wieder.
 
 # Dialogs
 15000=Eigenes Release
@@ -222,6 +226,7 @@
 16032=Wechsel zum neuen Release
 16033=WSA ist für den Windows-Benutzer {} aus {} registriert. Windows erlaubt nur einem Benutzer gleichzeitig, ein entpacktes WSA zu registrieren: Deinstallieren Sie es zuerst in jenem Konto (die Android-Daten können erhalten bleiben) und installieren Sie es dann hier.
 16034=WSA läuft für den Windows-Benutzer {}. Schließen Sie es in jenem Konto (WSA-Einstellungen, Ausschalten) und installieren Sie erneut.
+16035=Release {} benötigt WSA-Next {} oder neuer: Aktualisieren Sie zuerst WSA-Next.
 
 # Log
 17000={} {} gestartet.
@@ -280,6 +285,7 @@
 17053=WSA-Next {} für den Windows-Benutzer {} installiert. WSA bleibt nur für diesen Benutzer registriert: Windows erlaubt nur einem Benutzer gleichzeitig, ein entpacktes Paket zu registrieren.
 17054=WSA ist für den Windows-Benutzer {} aus {} registriert: seine Dateien und was es in Windows braucht, bleiben. Entfernen Sie es in diesem Konto.
 17055=Die Android-Einstellungen sind im Startmenü: {}
+17056=WSA-Next Setup {} wird heruntergeladen ({})
 
 # Errors
 18000=Es werden nur https://-Adressen unterstützt (http:// nur für localhost).
@@ -308,6 +314,7 @@
 18025=Aufgabenplanung
 18026=Bluetooth-Brücke wird gestartet
 18027=Starten des WSA-Next-Setups
+18028=Das heruntergeladene WSA-Next Setup ist nicht vom Herausgeber von WSA-Next signiert. Es wurde gelöscht und nicht gestartet.
 18030=Nicht genügend Arbeitsspeicher zum Entpacken.
 18031=Beschädigte komprimierte Daten ({}).
 18032=Die komprimierten Daten enden zu früh.
@@ -338,3 +345,5 @@
 19017=Diesen PC bei Google Play registrieren
 19018=Einmal nach einer Neuinstallation nötig. Hier klicken: Die Geräte-ID wird kopiert und die Google-Seite geöffnet. Anmelden, ID einfügen und „Registrieren“ drücken; den Play Store einige Minuten später erneut öffnen.
 19019=Bei Google Play registrieren…
+19020=WSA-Next {} ist verfügbar
+19021=Android-Release {} ist verfügbar

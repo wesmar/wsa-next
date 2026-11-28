@@ -7,6 +7,7 @@
 #include "bluetooth/Log.h"
 #include "host/Host.h"
 #include "core/Uninstall.h"
+#include "core/Update.h"
 #include "install/Package.h"
 #include "install/Setup.h"
 #include "install/Traces.h"
@@ -84,6 +85,8 @@ void MainWindow::OnCommand(UINT id, UINT /*code*/, HWND /*control*/) {
     case CmdSourceCustom: EditCustomSource(); break;
     case CmdReleases: OpenInBrowser(std::format(L"https://github.com/{}/releases", Config::kGitHubRepo).c_str()); break;
     case CmdSupport: OpenInBrowser(Config::kSupportUrl); break;
+    case CmdUpdateApp: UpdateApp(); break;
+    case CmdUpdateCheck: Core::Update::SetAutomaticCheck(!Core::Update::AutomaticCheck()); break;
     case CmdViewLog:
     case CmdExpand: SetLogVisible(!m_logVisible, true); break;
     case CmdCopyLog: CopyToClipboard(m_hwnd, m_log.Text()); break;
@@ -138,6 +141,54 @@ void MainWindow::StartInstall() {
         if (SUCCEEDED(com)) CoUninitialize();
         PostOwned(hwnd, WM_APP_DONE, std::move(done));
     });
+}
+
+// WSA-Next's own update: WSA-Next Setup of the newer version, downloaded and checked here, then
+// Windows Installer replaces this program and opens it again. Without Setup (WSA-Next.zip) the
+// release page opens instead.
+void MainWindow::UpdateApp() {
+    const Core::AppRelease* app = m_manifest ? Core::Update::NewerApp(*m_manifest) : nullptr;
+    if (!app) return;
+    if (!Install::SetupProduct()) {
+        OpenInBrowser(std::format(L"https://github.com/{}/releases/latest", Config::kGitHubRepo).c_str());
+        return;
+    }
+    m_removing = false;
+    BeginWork();
+    const std::wstring phase = Text::Format(IDS_LOG_APP_DOWNLOAD, app->version, FormatBytes(app->size));
+    Log(Level::Info, phase);
+    HWND hwnd = m_hwnd;
+    m_worker = std::jthread([hwnd, release = *app, phase](std::stop_token stop) {
+        const auto progress = [hwnd, &phase](std::uint64_t done, std::uint64_t total) {
+            auto p = std::make_unique<Core::Progress>();
+            p->phase = phase;
+            p->done = done;
+            p->total = total;
+            p->permille = total ? static_cast<int>(done * 1000 / total) : -1;
+            PostOwned(hwnd, WM_APP_PROGRESS, std::move(p));
+        };
+        const auto log = [hwnd](std::wstring text) { PostOwned(hwnd, WM_APP_LOG, std::make_unique<LogMessage>(LogMessage{Level::Info, std::move(text)})); };
+        auto result = Core::Update::DownloadAndStartSetup(release, progress, log, stop);
+        auto done = std::make_unique<DoneMessage>();
+        done->setup = true;
+        done->ok = result.has_value();
+        done->canceled = stop.stop_requested();
+        if (!result) done->error = result.error();
+        PostOwned(hwnd, WM_APP_DONE, std::move(done));
+    });
+}
+
+void MainWindow::OnSetupDone(bool ok, bool canceled, const std::wstring& error) {
+    if (!ok) {
+        OnInstallDone(false, canceled, false, error);
+        return;
+    }
+    m_busy = false;
+    const std::wstring text = Text::Format(IDS_STATUS_APP_SETUP, m_appUpdate);
+    Log(Level::Info, text);
+    SetStatus(Level::Info, text);
+    // Windows Installer replaces WSA-Next.exe: this window closes now and opens again after it.
+    PostMessageW(m_hwnd, WM_CLOSE, 0, 0);
 }
 
 void MainWindow::OnInstallDone(bool ok, bool canceled, bool restart, const std::wstring& error) {

@@ -12,8 +12,8 @@ IDI_ANDROID_SETTINGS ICON "android-settings.ico"
 1 RT_MANIFEST "app.manifest"
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,0,0
- PRODUCTVERSION 0,1,0,0
+ FILEVERSION 0,1,1,0
+ PRODUCTVERSION 0,1,1,0
  FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
  FILEFLAGS 0
  FILEOS VOS_NT_WINDOWS32
@@ -26,12 +26,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Marek Wesołowski - wesmar"
             VALUE "FileDescription", "WSA-Next - Windows Subsystem for Android with Android 15 (installer, GUI and command line)"
-            VALUE "FileVersion", "0.1.0.0"
+            VALUE "FileVersion", "0.1.1.0"
             VALUE "InternalName", "WSA-Next"
             VALUE "LegalCopyright", "© 2026 Marek Wesołowski - wesmar"
             VALUE "OriginalFilename", "WSA-Next.exe"
             VALUE "ProductName", "WSA-Next"
-            VALUE "ProductVersion", "0.1.0.0"
+            VALUE "ProductVersion", "0.1.1.0"
             VALUE "Comments", "https://github.com/wesmar/wsa-next"
         END
     END
