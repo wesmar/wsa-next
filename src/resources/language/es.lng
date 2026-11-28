@@ -60,6 +60,8 @@
 11034=Durante 5 minutos
 11035=Durante 30 minutos
 11036=Hasta que Windows se bloquee
+11037=Ajustes de Android…
+11038=Ajustes de Android
 
 # Buttons and labels
 12000=Instalar
@@ -69,6 +71,7 @@
 12004=Cambiar
 12005=Registro
 12006=Donar
+12007=Registrar…
 12010=Android 15 para Windows
 12011=Este equipo
 12012=Componentes
@@ -109,6 +112,10 @@
 13025=solo en el WSA-Next oficial (firmado)
 13026=solo con una versión oficial y sin modificar de WSA-Next
 13027=comprobando la versión instalada...
+13028=Google Play
+13029=no registrado desde este PC
+13030=registrado desde este PC
+13031=esperando a Android...
 
 # Components
 13100=instalado
@@ -152,6 +159,9 @@
 14026=WSA no se está ejecutando.
 14027=No se pudo detener WSA (se necesitan derechos de administrador).
 14028=Deteniendo WSA...
+14029=ID copiado - en la página de Google: inicia sesión, pega (Ctrl+V), Registrar.
+14030=Iniciando Android - la página de Google se abre en cuanto entregue el ID.
+14031=El servicio en segundo plano de WSA-Next no se está ejecutando.
 
 # Dialogs
 15000=Versión personalizada
@@ -269,6 +279,7 @@
 17052=WSA está registrado para el usuario de Windows {} desde esta carpeta: esta instalación lo actualiza para ese usuario.
 17053=WSA-Next {} instalado para el usuario de Windows {}. WSA sigue registrado solo para ese usuario: Windows solo permite que un usuario a la vez registre un paquete desempaquetado.
 17054=WSA está registrado para el usuario de Windows {} desde {}: sus archivos y lo que necesita en Windows se mantienen. Quítelo en esa cuenta.
+17055=Los ajustes de Android están en el menú Inicio: {}
 
 # Errors
 18000=Solo se admiten direcciones https:// (http:// solo para localhost).

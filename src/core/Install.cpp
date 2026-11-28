@@ -2,6 +2,7 @@
 #include "core/Install.h"
 #include "install/Package.h"
 #include "install/Setup.h"
+#include "install/Traces.h"
 #include "install/Unpack.h"
 #include "net/Downloader.h"
 #include "support/Config.h"
@@ -451,6 +452,17 @@ Result<Outcome> Run(const Manifest& manifest, const Options& options, const Call
     // highest privileges, so it must run from a folder only administrators can change.
     if (auto r = InstallHost(folder, state, true); r) log(Level::Success, Text::Get(IDS_LOG_HOST_INSTALLED));
     else log(Level::Warning, r.error());
+    // Android's own Settings in the Start menu next to the Android apps (WsaClient leaves it out);
+    // its icon is icon number 1 of the installed WSA-Next.exe.
+    {
+        std::error_code ec;
+        const fs::path hostExe = HostFolder() / Config::kExeName;
+        const std::wstring name = Text::Get(IDS_START_ANDROID_SETTINGS);
+        if (auto r = Install::CreateAndroidSettingsShortcut(name, fs::exists(hostExe, ec) ? hostExe : fs::path(ModulePath()), 1); r)
+            log(Level::Info, Text::Format(IDS_LOG_SETTINGS_SHORTCUT, name));
+        else
+            log(Level::Warning, r.error());
+    }
     meter.Phase(Text::Get(IDS_PHASE_DONE), 1000);
     return outcome;
 }

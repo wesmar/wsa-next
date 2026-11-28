@@ -156,6 +156,9 @@ int RunBackground() {
     std::jthread hello = StartBridge([](std::stop_token stop) { (void)Bio::RunBridge(stop); });
     // Google Play registration of a new installation: offered in a Windows notification
     // (host/Registration.h); a click on Android's own notification does not come back to Android.
+    // The window and the command line ask for it through kHostRegisterEvent.
+    const KernelHandle registerEvent(CreateEventW(nullptr, FALSE, FALSE, kHostRegisterEvent));
+    Settings::WriteDword(kGooglePlayIdKnownSetting, 0);  // until Android hands the ID to this host
     std::jthread registration = StartBridge([](std::stop_token stop) { RunRegistration(stop); });
     // The PC's modem as Android's SIM, network and SMS (ends at once on a PC without one).
     std::jthread modem = StartBridge([](std::stop_token stop) { Tel::RunBridge(stop); });
@@ -187,8 +190,17 @@ int RunBackground() {
         if (TrayEnabled() && !tray) tray = std::make_unique<Tray>(stopEvent.get());
         else if (!TrayEnabled()) tray.reset();
         NotifyHostChanged();
-        const HANDLE events[] = {stopEvent.get(), reloadEvent.get()};
-        if (WaitForMultipleObjects(2, events, FALSE, INFINITE) != WAIT_OBJECT_0 + 1) break;
+        const HANDLE events[] = {stopEvent.get(), reloadEvent.get(), registerEvent.get()};
+        const DWORD count = registerEvent ? 3 : 2;
+        DWORD wait = WaitForMultipleObjects(count, events, FALSE, INFINITE);
+        while (wait == WAIT_OBJECT_0 + 2) {
+            // The browser is opened through Explorer's COM objects: this thread needs COM.
+            const HRESULT com = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+            RequestRegistration();
+            if (SUCCEEDED(com)) CoUninitialize();
+            wait = WaitForMultipleObjects(count, events, FALSE, INFINITE);
+        }
+        if (wait != WAIT_OBJECT_0 + 1) break;
     }
     Bt::Log("host: stopping");
     tray.reset();

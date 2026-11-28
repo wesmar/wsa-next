@@ -6,6 +6,10 @@
   uid_sys_stats.c   ACK's task-exit profile notifier -> the sched_process_exit tracepoint
                     (probes run with preemption off: the deferred-work allocation becomes GFP_ATOMIC);
                     ACK's per-task fsync counter (ioac.syscfs) does not exist upstream: reported as 0
+  cgroup-v1.c       ACK lets a CAP_SYS_NICE holder move other users' tasks between cgroup v1 groups;
+                    without it system_server cannot put apps into the top-app/foreground/background
+                    cpusets ("AddTidToCgroup failed ... Permission denied") and Android's scheduling
+                    policy for apps does nothing
 """
 import os
 import sys
@@ -81,4 +85,11 @@ edit('drivers/misc/uid_sys_stats.c', [
      '}\n'),
     ('	profile_event_register(PROFILE_TASK_EXIT, &process_notifier_block);\n',
      '	register_trace_sched_process_exit(uid_sys_stats_task_exit, NULL);\n'),
+])
+
+# ACK behaviour on upstream code (no config switch): the same check as ACK 5.15 / 6.6 / 6.12
+edit('kernel/cgroup/cgroup-v1.c', [
+    ('	    !uid_eq(cred->euid, tcred->suid))\n		ret = -EACCES;',
+     '	    !uid_eq(cred->euid, tcred->suid) &&\n'
+     '	    !ns_capable(tcred->user_ns, CAP_SYS_NICE))\n		ret = -EACCES;'),
 ])

@@ -7,6 +7,7 @@
 #include "support/Browser.h"
 #include "support/HostEvents.h"
 #include "support/Settings.h"
+#include <atomic>
 #include <cstring>
 #include <format>
 #include <mutex>
@@ -16,10 +17,11 @@ namespace WN::Host {
 namespace {
 
 constexpr wchar_t kPage[] = L"https://www.google.com/android/uncertified";
-constexpr wchar_t kDoneSetting[] = L"GooglePlayRegistered";  // a digest of the ID registered last
+constexpr const wchar_t* kDoneSetting = kGooglePlayRegisteredSetting;  // a digest of the ID registered last
 
 std::mutex g_lock;
 std::wstring g_pending;  // the ID Android offered last
+std::atomic<bool> g_requested{false};  // asked for from the window or the command line before the ID came
 std::wstring g_shown;    // the ID whose notification this host has shown (Android offers it at
                          // every start and every check-in of Play services: several in seconds)
 
@@ -69,14 +71,21 @@ void Serve(SOCKET socket) {
         std::string digits(length, '\0');
         if (!RecvAll(socket, digits.data(), digits.size()) || digits.find_first_not_of("0123456789") != std::string::npos) return;
         const std::wstring id(digits.begin(), digits.end());
-        bool shownBefore = false;
+        bool shownBefore = false, known = false;
         {
             std::lock_guard guard(g_lock);
+            known = !g_pending.empty();
             g_pending = id;
             shownBefore = g_shown == id;
         }
+        if (!known) {
+            Settings::WriteDword(kGooglePlayIdKnownSetting, 1);
+            NotifyHostChanged();  // the window's "Register" no longer has to start Android first
+        }
         char reply = 'O';
-        if (Settings::Read(kDoneSetting) == Digest(id)) {
+        if (g_requested.exchange(false) && RegisterWithGoogle(nullptr)) {
+            Bt::Log("host: Google Play registration - asked for from WSA-Next, done now that Android handed over the ID");
+        } else if (Settings::Read(kDoneSetting) == Digest(id)) {
             Bt::Log("host: Google Play registration - this installation was registered from Windows before");
         } else if (shownBefore) {
             reply = 'S';  // the notification is out already
@@ -112,7 +121,14 @@ bool RegisterWithGoogle(void* owner) {
     OpenInBrowser(kPage);  // unelevated, its window to the front (the user's click allows it)
     Settings::Write(kDoneSetting, Digest(id));
     Bt::Log("host: Google Play registration page opened{}", copied ? ", device ID copied" : ", the device ID could not be copied");
+    NotifyHostChanged();  // the window shows "registered from this PC"
     return true;
+}
+
+void RequestRegistration() {
+    if (RegisterWithGoogle(nullptr)) return;
+    g_requested = true;
+    Bt::Log("host: Google Play registration asked for - done when Android hands over the device ID");
 }
 
 }  // namespace WN::Host

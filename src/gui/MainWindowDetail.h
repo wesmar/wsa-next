@@ -31,7 +31,9 @@ enum Command : UINT {
     CmdHelpCli, CmdAbout, CmdUninstall,
     CmdBtStart, CmdBtStop, CmdBtToggle, CmdBtAutostart, CmdBtLog, CmdStopWsa, CmdElevation, CmdElevationSu, CmdTray,
     CmdHelloRememberOff, CmdHelloRemember5, CmdHelloRemember30, CmdHelloRememberLock,  // Android > Remember Windows Hello
-    CmdSupport,  // the "Support" button on the menu bar's line
+    CmdAndroidSettings,  // Android > Android settings (com.android.settings)
+    CmdRegister,  // Google Play registration: Android > menu and the button in the "This PC" card
+    CmdSupport,   // the "Support" button on the menu bar's line
     CmdLanguageAuto = 1100, CmdLanguageFirst,  // View > language: automatic, then one per available language
     CmdLanguageLast = 1199,
 };
@@ -91,6 +93,7 @@ inline const ButtonSpec kButtons[] = {
     {CmdCancel, IDS_CANCEL, {ButtonKind::Standard, Icon::Cancel}},
     {CmdLaunch, IDS_BTN_LAUNCH, {ButtonKind::Standard, Icon::Play}},
     {CmdInstall, IDS_BTN_INSTALL, {ButtonKind::Accent, Icon::Download}},
+    {CmdRegister, IDS_BTN_REGISTER, {ButtonKind::Standard, Icon::OpenInNew}},  // in the "This PC" card
     {CmdExpand, IDS_BTN_LOG, {ButtonKind::Expander, 0, false}},
     // Last in the Tab order; on the window background, a quiet button: its heart is grey like the
     // other icons and turns sponsor pink only under the mouse (green stays for actions and status).

@@ -26,7 +26,7 @@ constexpr UINT kRefresh = WM_APP + 2;      // from the host: the state changed
 constexpr UINT kNotice = WM_APP + 3;       // from a bridge: a notification to show
 constexpr UINT kRegistration = WM_APP + 4; // from the registration helper: offer Google Play registration
 
-enum : UINT { CmdOpen = 1, CmdRegister, CmdBluetooth, CmdRoot, CmdSu, CmdStopWsa, CmdLog, CmdHide, CmdExit };
+enum : UINT { CmdOpen = 1, CmdAndroidSettings, CmdRegister, CmdBluetooth, CmdRoot, CmdSu, CmdStopWsa, CmdLog, CmdHide, CmdExit };
 
 struct Notice {
     std::wstring title, text;
@@ -210,6 +210,7 @@ void Tray::ShowMenu() {
     };
     item(CmdOpen, IDS_TRAY_OPEN);
     SetMenuDefaultItem(menu, CmdOpen, FALSE);
+    item(CmdAndroidSettings, IDS_MI_ANDROID_SETTINGS);
     if (!PendingRegistrationId().empty()) item(CmdRegister, IDS_TRAY_REGISTER);
     AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
     item(CmdBluetooth, IDS_TRAY_BLUETOOTH, BluetoothEnabled());
@@ -239,6 +240,7 @@ void Tray::Command(UINT id) {
             ShellExecuteW(nullptr, L"open", Executable().c_str(), nullptr, nullptr, SW_SHOWNORMAL);
         }
         break;
+    case CmdAndroidSettings: (void)Install::LaunchAndroidSettings(); break;
     case CmdRegister:
         m_registrationShown = false;
         (void)RegisterWithGoogle(m_hwnd);

@@ -27,6 +27,14 @@ TraceReport RemoveTraces(const std::filesystem::path& folder, const LogFn& log);
 // %LOCALAPPDATA%\Packages\<family>: the Android data disk (apps, accounts, files) and WSA's state.
 std::filesystem::path PackageDataFolder();
 
+// A Start menu entry for Android's own Settings (com.android.settings), which WsaClient leaves out of
+// the Android apps it lists: this user's, in the same form as WsaClient's entries (execution alias,
+// "/launch wsa://com.android.settings", AppUserModelID com.android.settings). `name` is the entry's
+// name; the icon is `iconFile`, icon number `iconIndex`. An earlier entry (another language) is
+// replaced. Removed by RemoveAndroidSettingsShortcut, found by its target, whatever its name.
+Result<> CreateAndroidSettingsShortcut(const std::wstring& name, const std::filesystem::path& iconFile, int iconIndex);
+void RemoveAndroidSettingsShortcut();
+
 // Total size of the files below `folder` (0 when it does not exist).
 std::uint64_t FolderSize(const std::filesystem::path& folder);
 

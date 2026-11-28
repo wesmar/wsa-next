@@ -92,6 +92,8 @@ private:
     void SetHelloRemember(std::uint32_t minutes, UINT choice);
     void BluetoothLog();
     void UpdateBluetoothRunning();  // on the host's change notification (and on activation)
+    void RegisterWithGoogle();      // Google Play registration through the background host
+    [[nodiscard]] bool ShowsGooglePlay() const;  // the "This PC" card has the Google Play row
     void SetSource(const std::wstring& key);
     void EditCustomSource();
     void ChangeFolder();
@@ -118,6 +120,7 @@ private:
     // Layout (client pixels)
     D2D1_RECT_F m_releaseCard{}, m_systemCard{}, m_componentsCard{}, m_logCard{};
     D2D1_RECT_F m_titleRect{}, m_metaRect{}, m_rowSource{}, m_rowFolder{}, m_rowDownload{}, m_progressRect{}, m_statusRect{};
+    float m_registerWidth = 0;  // the Google Play row's button, so its value text stops before it
     float m_labelWidth = 0;
     bool m_trackingMouse = false;
 
@@ -145,6 +148,8 @@ private:
     std::uint64_t m_btAdapter = 0;
     bool m_btKnown = false, m_btRunning = false, m_btConnected = false, m_btAutostart = false;
     Core::Release::State m_release = Core::Release::State::Unknown;  // the host's check of the installed release
+    bool m_googleRegistered = false;  // Google Play: an ID was registered from this PC (host/Registration.cpp)
+    bool m_googleWaiting = false;     // asked to register while Android had not handed over the ID yet
     KernelHandle m_hostChanged;  // kHostChangedEvent
     HANDLE m_hostWait = nullptr;  // its thread-pool wait
 

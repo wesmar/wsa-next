@@ -65,6 +65,9 @@ Guest::VmStop Stop();
 // Settings otherwise. Opening WSA Settings would not start Android, and Windows learns of the
 // Android apps (Start menu, installed apps) only once Android has run.
 Result<> LaunchAndroid();
+// Android's own Settings app (com.android.settings: networks, the SIM, apps, storage...), which WSA
+// labels "Windows Subsystem for Android Settings" and lists nowhere else; starts Android if needed.
+Result<> LaunchAndroidSettings();
 Result<> OpenUri(const std::wstring& uri);  // also an Android app: "wsa://<package>"
 
 }  // namespace WN::Install

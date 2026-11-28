@@ -7,6 +7,7 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 
 // Application icon: replace icon.ico to change it (16 ... 256 px in one file).
 IDI_APP ICON "icon.ico"
+IDI_ANDROID_SETTINGS ICON "android-settings.ico"
 
 1 RT_MANIFEST "app.manifest"
 

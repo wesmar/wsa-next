@@ -264,6 +264,79 @@ fs::path PackageDataFolder() {
     return local.empty() ? fs::path() : local / L"Packages" / kFamily;
 }
 
+namespace {
+
+constexpr wchar_t kSettingsArguments[] = L"/launch wsa://com.android.settings";
+// PKEY_AppUserModel_ID ({9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}, 5), without linking propsys.lib.
+constexpr PROPERTYKEY kAppUserModelId = {{0x9F4C2855, 0x9F79, 0x4B39, {0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3}}, 5};
+
+// This user's Start menu shortcuts that start Android's Settings (whatever their name: it follows
+// the language WSA-Next ran in when it made them).
+std::vector<fs::path> AndroidSettingsShortcuts() {
+    std::vector<fs::path> found;
+    const fs::path programs = KnownFolder(FOLDERID_Programs);
+    std::error_code ec;
+    if (programs.empty() || !fs::is_directory(programs, ec)) return found;
+    for (fs::directory_iterator it(programs, fs::directory_options::skip_permission_denied, ec), end; !ec && it != end; it.increment(ec)) {
+        if (_wcsicmp(it->path().extension().c_str(), L".lnk") != 0) continue;
+        ComPtr<IShellLinkW> link;
+        ComPtr<IPersistFile> file;
+        if (FAILED(CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(link.GetAddressOf()))) ||
+            FAILED(link.As(&file)) || FAILED(file->Load(it->path().c_str(), STGM_READ)))
+            continue;
+        wchar_t arguments[1024]{};
+        if (SUCCEEDED(link->GetArguments(arguments, static_cast<int>(std::size(arguments)))) && _wcsicmp(arguments, kSettingsArguments) == 0)
+            found.push_back(it->path());
+    }
+    return found;
+}
+
+}  // namespace
+
+Result<> CreateAndroidSettingsShortcut(const std::wstring& name, const fs::path& iconFile, int iconIndex) {
+    const fs::path local = KnownFolder(FOLDERID_LocalAppData);
+    const fs::path programs = KnownFolder(FOLDERID_Programs);
+    if (local.empty() || programs.empty()) return Fail(Text::Get(IDS_UNKNOWN_ERROR));
+    // The same form as WsaClient's own shortcuts: the package's execution alias, "/launch
+    // wsa://<package>", and the package name as AppUserModelID, so that the Settings window groups
+    // with its entry on the taskbar and can be pinned.
+    const fs::path client = local / L"Microsoft\\WindowsApps" / kFamily / L"WsaClient.exe";
+    for (const auto& old : AndroidSettingsShortcuts()) {  // one entry, in the current language
+        std::error_code ec;
+        fs::remove(old, ec);
+    }
+    ComPtr<IShellLinkW> link;
+    HRESULT hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(link.GetAddressOf()));
+    if (SUCCEEDED(hr)) hr = link->SetPath(client.c_str());
+    if (SUCCEEDED(hr)) hr = link->SetArguments(kSettingsArguments);
+    if (SUCCEEDED(hr)) hr = link->SetIconLocation(iconFile.c_str(), iconIndex);
+    if (SUCCEEDED(hr)) hr = link->SetDescription(name.c_str());
+    ComPtr<IPropertyStore> store;
+    if (SUCCEEDED(hr)) hr = link.As(&store);
+    if (SUCCEEDED(hr)) {
+        PROPVARIANT id;
+        PropVariantInit(&id);
+        id.vt = VT_LPWSTR;
+        id.pwszVal = const_cast<wchar_t*>(L"com.android.settings");
+        hr = store->SetValue(kAppUserModelId, id);  // not cleared: the string is not ours to free
+        if (SUCCEEDED(hr)) hr = store->Commit();
+    }
+    ComPtr<IPersistFile> file;
+    const fs::path lnk = programs / (name + L".lnk");
+    if (SUCCEEDED(hr)) hr = link.As(&file);
+    if (SUCCEEDED(hr)) hr = file->Save(lnk.c_str(), TRUE);
+    if (FAILED(hr)) return Fail(ErrorText(lnk.wstring(), static_cast<unsigned long>(hr)));
+    SHChangeNotify(SHCNE_CREATE, SHCNF_PATHW, lnk.c_str(), nullptr);
+    return {};
+}
+
+void RemoveAndroidSettingsShortcut() {
+    for (const auto& lnk : AndroidSettingsShortcuts()) {
+        std::error_code ec;
+        if (fs::remove(lnk, ec)) SHChangeNotify(SHCNE_DELETE, SHCNF_PATHW, lnk.c_str(), nullptr);
+    }
+}
+
 std::uint64_t FolderSize(const fs::path& folder) {
     std::uint64_t total = 0;
     std::error_code ec;

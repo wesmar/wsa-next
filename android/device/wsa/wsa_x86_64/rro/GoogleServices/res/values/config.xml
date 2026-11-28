@@ -6,4 +6,32 @@
          step counting registration (its health tracking API answers INTERNAL_ERROR), and apps
          that do not expect that, such as Samsung Health, crash and restart in a loop. -->
     <string name="config_systemActivityRecognizer" translatable="false">com.google.android.gms</string>
+
+    <!-- Not config_deviceConfiguratorPackageName: with Play services as the device configurator
+         Google treats this uncertified build as a GMS device under compliance rules, and the Play
+         Store opened Google's "This device isn't Play Protect certified" block instead of its
+         sign-in screen, even with the device ID registered (tested 2026-11-27). The price is
+         SettingsProvider refusing Play services' platform flag syncs (log noise only). -->
+
+    <!-- Font updates from Google (new emoji, Noto fonts) are signed with Google's fs-verity key.
+         FontManagerService trusts only the certificates listed here; with the list empty every
+         update failed with "Font validation failed. Fs-verity is not enabled". The certificate
+         comes with the Google apps base set (product/etc/security/fsverity). -->
+    <string-array name="config_fontManagerServiceCerts" translatable="false">
+        <item>/product/etc/security/fsverity/gms_fsverity_cert.der</item>
+    </string-array>
+
+    <!-- Passwords and passkeys as on phones with Google's apps: Google Password Manager is the
+         default autofill service and the Credential Manager provider, so "Sign in with Google",
+         saved passwords and passkeys work in apps without a trip to the settings. Values as in
+         Google's own GoogleConfigOverlay. -->
+    <string name="config_defaultAutofillService" translatable="false">com.google.android.gms/.autofill.service.AutofillService</string>
+    <string-array name="config_enabledCredentialProviderService" translatable="false">
+        <item>com.google.android.gms/.auth.api.credentials.credman.service.PasswordAndPasskeyService</item>
+    </string-array>
+    <string-array name="config_primaryCredentialProviderService" translatable="false">
+        <item>com.google.android.gms/.auth.api.credentials.credman.service.PasswordAndPasskeyService</item>
+    </string-array>
+    <string name="config_defaultCredentialManagerHybridService" translatable="false">com.google.android.gms/.auth.api.credentials.credman.service.RemoteService</string>
+    <string name="config_oemCredentialManagerDialogComponent" translatable="false">com.google.android.gms/.identitycredentials.ui.CredentialChooserActivity</string>
 </resources>

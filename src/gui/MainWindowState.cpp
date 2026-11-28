@@ -12,6 +12,7 @@
 #include "host/Host.h"
 #include "core/Uninstall.h"
 #include "support/Config.h"
+#include "support/HostEvents.h"
 #include "support/Settings.h"
 #include "support/Text.h"
 #include <objbase.h>
@@ -143,8 +144,10 @@ bool MainWindow::Can(UINT command) const {
     case CmdHelloRememberOff: case CmdHelloRemember5: case CmdHelloRemember30: case CmdHelloRememberLock:
         return !m_removing && Signature::OfficialFeatures();
     case CmdElevationSu: return !m_removing && Signature::OfficialFeatures() && Host::ElevationEnabled();
+    case CmdRegister: return !m_busy && ShowsGooglePlay() && Signature::OfficialFeatures();  // the host does it
     case CmdCheck: return idle;
     case CmdLaunch: return !m_busy && m_system && m_system->package;
+    case CmdAndroidSettings: return !m_busy && m_system && m_system->package;
     case CmdStopWsa: return !m_busy && m_system && m_system->package;
     case CmdOpenFolder: { std::error_code ec; return std::filesystem::exists(m_folder, ec); }
     case CmdChangeFolder:
@@ -156,7 +159,7 @@ bool MainWindow::Can(UINT command) const {
 }
 
 void MainWindow::UpdateControls() {
-    for (UINT id : {CmdInstall, CmdCancel, CmdLaunch, CmdChangeFolder, CmdSourceMenu, CmdBtToggle}) {
+    for (UINT id : {CmdInstall, CmdCancel, CmdLaunch, CmdChangeFolder, CmdSourceMenu, CmdBtToggle, CmdRegister}) {
         HWND b = GetDlgItem(m_hwnd, static_cast<int>(id));
         const bool enable = Can(id);
         if ((IsWindowEnabled(b) != FALSE) != enable) {
@@ -203,10 +206,22 @@ void MainWindow::UpdateBluetoothRunning() {
     const bool running = Host::Running() && Host::BluetoothEnabled();
     const bool connected = running && Bt::AndroidConnected();
     const Core::Release::State release = Core::Release::HostVerdict();
-    if (running == m_btRunning && connected == m_btConnected && release == m_release) return;
+    // Google Play registration (host/Registration.cpp): registered from this PC, and - after the
+    // button started Android - whether the host has the ID now and opened Google's page.
+    const bool registered = !Settings::Read(kGooglePlayRegisteredSetting).empty();
+    bool waiting = m_googleWaiting;
+    if (waiting && Settings::ReadDword(kGooglePlayIdKnownSetting, 0) != 0) {
+        waiting = false;
+        SetStatus(Level::Info, Text::Get(IDS_STATUS_REGISTER));
+    }
+    if (running == m_btRunning && connected == m_btConnected && release == m_release && registered == m_googleRegistered &&
+        waiting == m_googleWaiting)
+        return;
     m_btRunning = running;
     m_btConnected = connected;
     m_release = release;
+    m_googleRegistered = registered;
+    m_googleWaiting = waiting;
     UpdateControls();
     InvalidateRect(GetDlgItem(m_hwnd, CmdBtToggle), nullptr, FALSE);
     const RECT r{static_cast<LONG>(m_systemCard.left), static_cast<LONG>(m_systemCard.top), static_cast<LONG>(m_systemCard.right),

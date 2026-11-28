@@ -269,19 +269,12 @@ void DefaultWsaSettings() {
     }
 }
 
-Result<> LaunchAndroid() {
-    // The installed release names its variant ("variant": "Google Play") in release.json.
-    bool googlePlay = false;
-    fs::path folder;
-    if (const auto package = FindWsa()) {
-        folder = package->location;
-        std::ifstream file(folder / L"release.json", std::ios::binary);
-        const std::string raw((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-        std::smatch variant;
-        static const std::regex kVariant(R"re("variant"\s*:\s*"([^"]*)")re");
-        googlePlay = std::regex_search(raw, variant, kVariant) && variant[1].str().find("Google") != std::string::npos;
-    }
-    const std::wstring uri = googlePlay ? L"wsa://com.android.vending" : L"wsa://com.android.settings";
+namespace {
+
+// An Android app through WsaClient's execution alias ("/launch wsa://<package>"), started in the
+// package folder; the shell's URI handler is the fallback.
+Result<> LaunchAndroidApp(const fs::path& folder, const std::wstring& package) {
+    const std::wstring uri = L"wsa://" + package;
     if (const fs::path client = WsaClientAlias(); !client.empty()) {
         std::wstring command = std::format(L"\"{}\" /launch {}", client.wstring(), uri);
         STARTUPINFOW si{sizeof si};
@@ -295,6 +288,29 @@ Result<> LaunchAndroid() {
         }
     }
     return OpenUri(uri);
+}
+
+}  // namespace
+
+Result<> LaunchAndroid() {
+    // The installed release names its variant ("variant": "Google Play") in release.json.
+    bool googlePlay = false;
+    fs::path folder;
+    if (const auto package = FindWsa()) {
+        folder = package->location;
+        std::ifstream file(folder / L"release.json", std::ios::binary);
+        const std::string raw((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        std::smatch variant;
+        static const std::regex kVariant(R"re("variant"\s*:\s*"([^"]*)")re");
+        googlePlay = std::regex_search(raw, variant, kVariant) && variant[1].str().find("Google") != std::string::npos;
+    }
+    return LaunchAndroidApp(folder, googlePlay ? L"com.android.vending" : L"com.android.settings");
+}
+
+Result<> LaunchAndroidSettings() {
+    fs::path folder;
+    if (const auto package = FindWsa()) folder = package->location;
+    return LaunchAndroidApp(folder, L"com.android.settings");
 }
 
 Result<> OpenUri(const std::wstring& uri) {

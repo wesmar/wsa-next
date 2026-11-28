@@ -60,6 +60,8 @@
 11034=Selama 5 menit
 11035=Selama 30 menit
 11036=Sampai Windows dikunci
+11037=Setelan Android…
+11038=Setelan Android
 
 # Buttons and labels
 12000=Instal
@@ -69,6 +71,7 @@
 12004=Ubah
 12005=Log
 12006=Donasi
+12007=Daftarkan…
 12010=Android 15 untuk Windows
 12011=PC ini
 12012=Komponen
@@ -109,6 +112,10 @@
 13025=hanya di WSA-Next resmi (bertanda tangan)
 13026=hanya dengan rilis WSA-Next resmi yang tidak diubah
 13027=memeriksa rilis yang terinstal...
+13028=Google Play
+13029=belum didaftarkan dari PC ini
+13030=sudah didaftarkan dari PC ini
+13031=menunggu Android...
 
 # Components
 13100=terinstal
@@ -152,6 +159,9 @@
 14026=WSA tidak berjalan.
 14027=WSA tidak dapat dihentikan (diperlukan hak administrator).
 14028=Menghentikan WSA...
+14029=ID disalin - di halaman Google: masuk, tempel (Ctrl+V), Daftar.
+14030=Menjalankan Android - halaman Google terbuka begitu ID diberikan.
+14031=Layanan latar belakang WSA-Next tidak berjalan.
 
 # Dialogs
 15000=Rilis kustom
@@ -269,6 +279,7 @@
 17052=WSA terdaftar untuk pengguna Windows {} dari folder ini: pemasangan ini memperbaruinya untuk pengguna tersebut.
 17053=WSA-Next {} terpasang untuk pengguna Windows {}. WSA tetap terdaftar hanya untuk pengguna itu: Windows hanya mengizinkan satu pengguna pada satu waktu untuk mendaftarkan paket yang tidak dikemas.
 17054=WSA terdaftar untuk pengguna Windows {} dari {}: filenya dan yang dibutuhkannya di Windows tetap ada. Hapus di akun tersebut.
+17055=Setelan Android ada di menu Start: {}
 
 # Errors
 18000=Hanya alamat https:// yang didukung (http:// hanya untuk localhost).

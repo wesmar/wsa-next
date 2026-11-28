@@ -31,4 +31,8 @@ std::wstring PendingRegistrationId();
 // page in the user's browser; remembers the ID as done. False without a pending ID.
 bool RegisterWithGoogle(void* owner);
 
+// A registration asked for from the window or the command line (support/HostEvents.h,
+// kHostRegisterEvent): done at once with a pending ID, otherwise when Android hands one over.
+void RequestRegistration();
+
 }  // namespace WN::Host

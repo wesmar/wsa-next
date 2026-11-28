@@ -60,6 +60,8 @@
 11034=Na 5 minut
 11035=Na 30 minut
 11036=Do uzamčení Windows
+11037=Nastavení Androidu…
+11038=Nastavení Androidu
 
 # Buttons and labels
 12000=Nainstalovat
@@ -69,6 +71,7 @@
 12004=Změnit
 12005=Protokol
 12006=Přispět
+12007=Zaregistrovat…
 12010=Android 15 pro Windows
 12011=Tento počítač
 12012=Součásti
@@ -109,6 +112,10 @@
 13025=pouze v oficiálním (podepsaném) WSA-Next
 13026=pouze s oficiální, neupravenou verzí WSA-Next
 13027=kontrola nainstalované verze...
+13028=Google Play
+13029=z tohoto počítače neregistrováno
+13030=zaregistrováno z tohoto počítače
+13031=čekání na Android...
 
 # Components
 13100=nainstalováno
@@ -152,6 +159,9 @@
 14026=WSA neběží.
 14027=WSA se nepodařilo zastavit (jsou potřeba práva správce).
 14028=Zastavování WSA...
+14029=ID zkopírováno - na stránce Googlu: přihlaste se, vložte (Ctrl+V), Registrovat.
+14030=Spouštím Android - stránka Googlu se otevře, jakmile předá ID.
+14031=Služba WSA-Next na pozadí neběží.
 
 # Dialogs
 15000=Vlastní verze
@@ -269,6 +279,7 @@
 17052=WSA je registrován pro uživatele Windows {} z této složky: tato instalace ho pro tohoto uživatele aktualizuje.
 17053=WSA-Next {} nainstalován pro uživatele Windows {}. WSA zůstává registrován jen pro tohoto uživatele: Windows dovoluje registrovat rozbalený balíček vždy jen jednomu uživateli.
 17054=WSA je registrován pro uživatele Windows {} ze složky {}: jeho soubory a to, co ve Windows potřebuje, zůstávají. Odeberte ho na tom účtu.
+17055=Nastavení Androidu jsou v nabídce Start: {}
 
 # Errors
 18000=Podporovány jsou jen adresy https:// (http:// jen pro localhost).

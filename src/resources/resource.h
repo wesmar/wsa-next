@@ -5,6 +5,7 @@
 #define WSANext_RESOURCE_H
 
 #define IDI_APP 1
+#define IDI_ANDROID_SETTINGS 2  // the Start menu entry for Android's Settings (icon number 1)
 
 // General
 #define IDS_ON                           10000
@@ -63,6 +64,8 @@
 #define IDS_MI_HELLO_REMEMBER_5          11034
 #define IDS_MI_HELLO_REMEMBER_30         11035
 #define IDS_MI_HELLO_REMEMBER_LOCK       11036
+#define IDS_MI_ANDROID_SETTINGS          11037
+#define IDS_START_ANDROID_SETTINGS       11038
 // Buttons and labels
 #define IDS_BTN_INSTALL                  12000
 #define IDS_BTN_UPDATE                   12001
@@ -71,6 +74,7 @@
 #define IDS_BTN_CHANGE                   12004
 #define IDS_BTN_LOG                      12005
 #define IDS_BTN_SUPPORT                  12006
+#define IDS_BTN_REGISTER                 12007
 #define IDS_CARD_RELEASE                 12010
 #define IDS_CARD_SYSTEM                  12011
 #define IDS_CARD_COMPONENTS              12012
@@ -111,6 +115,10 @@
 #define IDS_SYS_BT_UNOFFICIAL            13025
 #define IDS_SYS_BT_RELEASE               13026
 #define IDS_SYS_BT_CHECKING              13027
+#define IDS_SYS_GOOGLE                   13028
+#define IDS_SYS_GOOGLE_TODO              13029
+#define IDS_SYS_GOOGLE_DONE              13030
+#define IDS_SYS_GOOGLE_WAIT              13031
 
 // Components
 #define IDS_COMP_INSTALLED               13100
@@ -154,6 +162,9 @@
 #define IDS_STATUS_WSA_NOT_RUNNING       14026
 #define IDS_STATUS_WSA_STOP_FAILED       14027
 #define IDS_STATUS_WSA_STOPPING          14028
+#define IDS_STATUS_REGISTER              14029
+#define IDS_STATUS_REGISTER_WAIT         14030
+#define IDS_STATUS_REGISTER_NOHOST       14031
 
 // Dialogs
 #define IDS_CUSTOM_HEADING               15000
@@ -273,6 +284,7 @@
 #define IDS_LOG_OTHER_USER               17052
 #define IDS_LOG_OTHER_USER_DONE          17053
 #define IDS_LOG_OTHER_USER_KEPT          17054
+#define IDS_LOG_SETTINGS_SHORTCUT        17055
 // Errors (network, files, archives)
 #define IDS_HTTPS_ONLY                   18000
 #define IDS_HTTP_STATUS                  18001

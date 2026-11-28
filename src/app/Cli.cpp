@@ -17,6 +17,7 @@
 #include "install/Setup.h"
 #include "install/Traces.h"
 #include "support/Config.h"
+#include "support/HostEvents.h"
 #include "support/Settings.h"
 #include "support/Text.h"
 #include "telephony/AtModem.h"
@@ -535,6 +536,10 @@ std::wstring HelpText() {
         L"                       Hello confirms every request on this PC (off by default)\n"
         L"  elevation su on|off  also offer root apps the name they look for, su (a link to 0)\n"
         L"  launch               start Android (the Play Store, or Android's Settings)\n"
+        L"  settings             open Android's own settings (networks, the SIM, apps, storage)\n"
+        L"  register             register this PC with Google Play: the background host copies the device\n"
+        L"                       ID and opens Google's page (Android is started first when it has not\n"
+        L"                       handed the ID over yet)\n"
         L"  stop                 stop WSA and free its memory, nothing is removed; it starts again\n"
         L"                       with the next Android app (administrator)\n"
         L"  verify [folder]      check that the installed Android is an official release, unchanged\n"
@@ -622,6 +627,29 @@ int Run(int argc, wchar_t** argv) {
         return kFailed;
     }
     if (args.command == L"launch") {
+        if (auto r = Install::LaunchAndroid(); !r) {
+            con.Status(Level::Error, r.error());
+            return kFailed;
+        }
+        return kOk;
+    }
+    if (args.command == L"settings") {
+        if (auto r = Install::LaunchAndroidSettings(); !r) {
+            con.Status(Level::Error, r.error());
+            return kFailed;
+        }
+        return kOk;
+    }
+    if (args.command == L"register") {
+        if (!RequestHostRegistration()) {
+            con.Status(Level::Error, Text::Get(IDS_STATUS_REGISTER_NOHOST));
+            return kFailed;
+        }
+        if (Settings::ReadDword(kGooglePlayIdKnownSetting, 0) != 0) {
+            con.Status(Level::Success, Text::Get(IDS_STATUS_REGISTER));
+            return kOk;
+        }
+        con.Status(Level::Info, Text::Get(IDS_STATUS_REGISTER_WAIT));
         if (auto r = Install::LaunchAndroid(); !r) {
             con.Status(Level::Error, r.error());
             return kFailed;

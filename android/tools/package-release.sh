@@ -98,10 +98,43 @@ for disk in metadata userdata; do
     [[ -f $WSA/$disk.vhdx ]] && cp "$WSA/$disk.vhdx" "$WORK/$disk.vhdx"
 done
 
+# The vendor image as the WSA tools unpack it carries init.windows_x86_64.rc.backup (the original
+# beside the patched init.windows_x86_64.rc, which also belongs to the radio user). init parses every
+# file in /vendor/etc/init, so the backup ran Microsoft's early-init and fs actions a second time:
+# mount_all twice (the second pass fails over the virtiofs shares), a second binfmt_misc mount, and
+# duplicate service definitions. The cleaned image is kept in <out>/.vendor keyed by the input's
+# SHA-256: VHDX files carry random GUIDs, and rebuilding it every run would change the vendor disk of
+# every release and make every user download it again.
+VENDOR=$WSA/vendor.vhdx
+VENDOR_RC=/etc/init/init.windows_x86_64.rc
+vendor_in=$(sha256sum "$VENDOR" | cut -d' ' -f1)
+if [[ -f $OUT/.vendor/vendor.vhdx && $(cat "$OUT/.vendor/source" 2>/dev/null) == "$vendor_in" ]]; then
+    VENDOR=$OUT/.vendor/vendor.vhdx
+    log "vendor: cleaned image from $OUT/.vendor"
+elif command -v qemu-img >/dev/null && command -v debugfs >/dev/null; then
+    qemu-img convert -f vhdx -O raw "$VENDOR" "$WORK/vendor.img"
+    if debugfs -R "stat $VENDOR_RC.backup" "$WORK/vendor.img" 2>/dev/null | grep -q '^Inode:'; then
+        debugfs -w -R "rm $VENDOR_RC.backup" "$WORK/vendor.img" >/dev/null 2>&1
+        debugfs -w -f - "$WORK/vendor.img" >/dev/null 2>&1 <<EOF
+sif $VENDOR_RC uid 0
+sif $VENDOR_RC gid 0
+EOF
+        e2fsck -fn "$WORK/vendor.img" >/dev/null || { echo "vendor image check failed after cleaning" >&2; exit 1; }
+        mkdir -p "$OUT/.vendor"
+        qemu-img convert -f raw -O vhdx -o subformat=dynamic "$WORK/vendor.img" "$OUT/.vendor/vendor.vhdx"
+        echo "$vendor_in" > "$OUT/.vendor/source"
+        VENDOR=$OUT/.vendor/vendor.vhdx
+        log "vendor: removed $VENDOR_RC.backup"
+    fi
+    rm -f "$WORK/vendor.img"
+else
+    log "vendor: qemu-img/debugfs missing, vendor image used as unpacked"
+fi
+
 component system disk system.vhdx "$IMAGES/system.vhdx"
 component system_ext disk system_ext.vhdx "$IMAGES/system_ext.vhdx"
 component product disk product.vhdx "$IMAGES/product.vhdx"
-component vendor disk vendor.vhdx "$WSA/vendor.vhdx"
+component vendor disk vendor.vhdx "$VENDOR"
 component kernel file Tools/kernel "${KERNEL:-$WSA/Tools/kernel}"
 component initrd file Tools/initrd.img "$INITRD"
 component windows archive . "$WORK/windows.tar"

@@ -60,6 +60,8 @@
 11034=Pendant 5 minutes
 11035=Pendant 30 minutes
 11036=Jusqu’au verrouillage de Windows
+11037=Paramètres Android…
+11038=Paramètres Android
 
 # Buttons and labels
 12000=Installer
@@ -69,6 +71,7 @@
 12004=Modifier
 12005=Journal
 12006=Faire un don
+12007=Enregistrer…
 12010=Android 15 pour Windows
 12011=Ce PC
 12012=Composants
@@ -109,6 +112,10 @@
 13025=uniquement dans WSA-Next officiel (signé)
 13026=uniquement avec une version officielle et non modifiée de WSA-Next
 13027=vérification de la version installée...
+13028=Google Play
+13029=non enregistré depuis ce PC
+13030=enregistré depuis ce PC
+13031=en attente d'Android...
 
 # Components
 13100=installé
@@ -152,6 +159,9 @@
 14026=WSA n’est pas en cours d’exécution.
 14027=Impossible d’arrêter WSA (droits d’administrateur requis).
 14028=Arrêt de WSA...
+14029=ID copié - sur la page de Google : connectez-vous, collez (Ctrl+V), Enregistrer.
+14030=Démarrage d'Android - la page de Google s'ouvre dès qu'il transmet l'ID.
+14031=Le service d'arrière-plan de WSA-Next ne fonctionne pas.
 
 # Dialogs
 15000=Version personnalisée
@@ -269,6 +279,7 @@
 17052=WSA est enregistré pour l’utilisateur Windows {} depuis ce dossier : cette installation le met à jour pour cet utilisateur.
 17053=WSA-Next {} installé pour l’utilisateur Windows {}. WSA reste enregistré pour cet utilisateur seulement : Windows ne permet qu’à un seul utilisateur à la fois d’enregistrer un paquet décompressé.
 17054=WSA est enregistré pour l’utilisateur Windows {} depuis {} : ses fichiers et ce dont il a besoin dans Windows restent. Supprimez-le sur ce compte.
+17055=Les paramètres Android sont dans le menu Démarrer : {}
 
 # Errors
 18000=Seules les adresses https:// sont prises en charge (http:// uniquement pour localhost).

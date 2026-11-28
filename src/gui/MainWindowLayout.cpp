@@ -20,7 +20,7 @@ constexpr std::size_t kMinComponentRows = 7;
 constexpr float kReleaseH = kPad + kTitleH + kMetaH + 12 + 3 * kRowH + 2 * 6 + 12 + 4 + 12 + kButtonH + kPad;
 
 float LowerCardsHeight(std::size_t components) {
-    const float system = kPad + kHeaderH + 8 + 5 * kSystemRowH + kPad - 6;
+    const float system = kPad + kHeaderH + 8 + 6 * kSystemRowH + kPad - 6;  // the sixth: Google Play
     const float list = kPad + kHeaderH + 8 + static_cast<float>(std::max(components, kMinComponentRows)) * kComponentRowH + kPad;
     return std::max(system, list);
 }
@@ -128,7 +128,24 @@ void MainWindow::Layout() {
     const float split = m + (W - 2 * m - f.F(10)) * 0.46f;
     m_systemCard = {m, y, split, bottom};
     m_componentsCard = {split + f.F(10), y, W - m, bottom};
+
+    // Google Play registration: a compact button at the right of the card's sixth row.
+    {
+        HWND button = GetDlgItem(m_hwnd, CmdRegister);
+        wchar_t text[64]{};
+        GetWindowTextW(button, text, static_cast<int>(std::size(text)));
+        m_registerWidth = std::ceil(TextWidth(f, Font::Body, text) + f.F(22 + 30));
+        const float rowTop = y + p + f.F(kHeaderH + 8 + 5 * kSystemRowH);
+        const float top = rowTop + (f.F(kSystemRowH) - bh) / 2;
+        place(CmdRegister, {split - p - m_registerWidth, top, split - p, top + bh});
+        ShowWindow(button, ShowsGooglePlay() ? SW_SHOWNA : SW_HIDE);
+    }
     InvalidateRect(m_hwnd, nullptr, FALSE);
+}
+
+bool MainWindow::ShowsGooglePlay() const {
+    // An installed WSA-Next whose release (as the source offers it) carries Google's apps.
+    return m_system && m_system->package && (!m_manifest || m_manifest->variant.find(L"Google") != std::wstring::npos);
 }
 
 void MainWindow::SetLogVisible(bool visible, bool resizeWindow) {
@@ -271,7 +288,7 @@ void MainWindow::PaintSystemCard(Canvas& c) {
 
     // A row: status mark, label, value; `note` (what the installation will change) sits right of the label.
     enum class Mark { Ok, Todo, Bad, Wait };
-    auto rowAt = [&](UINT labelId, const std::wstring& value, Mark mark, const std::wstring& note = {}) {
+    auto rowAt = [&](UINT labelId, const std::wstring& value, Mark mark, const std::wstring& note = {}, float reserve = 0) {
         const D2D1_COLOR_F color = mark == Mark::Ok ? Color::Success : mark == Mark::Todo ? Color::Caution
                                    : mark == Mark::Bad ? Color::Critical : Color::Text3;
         const wchar_t glyph = mark == Mark::Ok ? Icon::StatusOk : mark == Mark::Bad ? Icon::StatusError : mark == Mark::Todo ? Icon::Info : Icon::Refresh;
@@ -283,7 +300,7 @@ void MainWindow::PaintSystemCard(Canvas& c) {
             const float x = left + icon + c.Width(label, Font::Label) + f.F(12);
             c.Text(note, {x, y, right, y + f.F(18)}, Font::Caption, Color::Caution, Align::Right);
         }
-        c.Text(value, {left + icon, y + f.F(18), right, y + f.F(kSystemRowH - 4)}, Font::Body, mark == Mark::Bad ? Color::Critical : Color::Text);
+        c.Text(value, {left + icon, y + f.F(18), right - reserve, y + f.F(kSystemRowH - 4)}, Font::Body, mark == Mark::Bad ? Color::Critical : Color::Text);
         y += f.F(kSystemRowH);
     };
 
@@ -326,6 +343,14 @@ void MainWindow::PaintSystemCard(Canvas& c) {
               m_btAutostart ? Text::Get(IDS_SYS_BT_AUTOSTART) : std::wstring());
     } else {
         rowAt(IDS_SYS_BLUETOOTH, Text::Get(IDS_SYS_BT_OFF), Mark::Todo, Text::Get(IDS_SYS_BT_HINT));
+    }
+
+    // Google Play: Google lets an uncertified installation sign in once its device ID is registered.
+    if (ShowsGooglePlay()) {
+        const float reserve = m_registerWidth + f.F(8);
+        if (m_googleWaiting) rowAt(IDS_SYS_GOOGLE, Text::Get(IDS_SYS_GOOGLE_WAIT), Mark::Wait, {}, reserve);
+        else if (m_googleRegistered) rowAt(IDS_SYS_GOOGLE, Text::Get(IDS_SYS_GOOGLE_DONE), Mark::Ok, {}, reserve);
+        else rowAt(IDS_SYS_GOOGLE, Text::Get(IDS_SYS_GOOGLE_TODO), Mark::Todo, {}, reserve);
     }
 }
 

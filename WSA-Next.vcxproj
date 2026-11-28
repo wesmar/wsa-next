@@ -215,6 +215,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\resources\icon.ico" />
+    <Image Include="src\resources\android-settings.ico" />
   </ItemGroup>
   <ItemGroup>
     <!-- Language files are not compiled in: they are copied next to the executable (bin\language). -->

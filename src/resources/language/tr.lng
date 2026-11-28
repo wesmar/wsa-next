@@ -60,6 +60,8 @@
 11034=5 dakika boyunca
 11035=30 dakika boyunca
 11036=Windows kilitlenene kadar
+11037=Android ayarları…
+11038=Android Ayarları
 
 # Buttons and labels
 12000=Yükle
@@ -69,6 +71,7 @@
 12004=Değiştir
 12005=Günlük
 12006=Bağış yap
+12007=Kaydet…
 12010=Windows için Android 15
 12011=Bu bilgisayar
 12012=Bileşenler
@@ -109,6 +112,10 @@
 13025=yalnızca resmî (imzalı) WSA-Next'te
 13026=yalnızca resmî, değiştirilmemiş bir WSA-Next sürümüyle
 13027=yüklü sürüm denetleniyor...
+13028=Google Play
+13029=bu bilgisayardan kaydedilmedi
+13030=bu bilgisayardan kaydedildi
+13031=Android bekleniyor...
 
 # Components
 13100=yüklü
@@ -152,6 +159,9 @@
 14026=WSA çalışmıyor.
 14027=WSA durdurulamadı (yönetici hakları gerekli).
 14028=WSA durduruluyor...
+14029=Kimlik kopyalandı - Google sayfasında: oturum açın, yapıştırın (Ctrl+V), Kaydet.
+14030=Android başlatılıyor - kimliği verdiğinde Google sayfası açılacak.
+14031=WSA-Next arka plan hizmeti çalışmıyor.
 
 # Dialogs
 15000=Özel sürüm
@@ -269,6 +279,7 @@
 17052=WSA, {} Windows kullanıcısı için bu klasörden kayıtlı: bu yükleme onu o kullanıcı için günceller.
 17053=WSA-Next {}, {} Windows kullanıcısı için yüklendi. WSA yalnızca o kullanıcı için kayıtlı kalır: Windows, paketten çıkarılmış bir paketi aynı anda yalnızca bir kullanıcının kaydetmesine izin verir.
 17054=WSA, {} Windows kullanıcısı için {} konumundan kayıtlı: dosyaları ve Windows’ta ihtiyaç duyduğu şeyler kalır. Onu o hesapta kaldırın.
+17055=Android ayarları Başlat menüsünde: {}
 
 # Errors
 18000=Yalnızca https:// adresleri desteklenir (http:// yalnızca localhost için).

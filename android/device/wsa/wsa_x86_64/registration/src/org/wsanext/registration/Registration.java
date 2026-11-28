@@ -112,20 +112,26 @@ final class Registration {
         }
     }
 
-    /** Offers the registration when there is an ID the user has not marked as done. */
+    /**
+     * Hands the ID to WSA-Next on Windows after every start and check-in, registered or not: the
+     * host decides whether to notify (only for an ID not registered from Windows before) and
+     * keeps "Register with Google Play" in its notification-area menu either way, so the ID can
+     * be copied and the page opened again later - Google may ask for it after an update. Android's
+     * own notification appears only without a host, and not again once marked as done.
+     */
     static void update(Context context) {
         final String id = gsfId(context);
         if (id == null) return;  // CHECKIN_COMPLETE brings us back once there is one
-        if (id.equals(prefs(context).getString(KEY_DONE, null))) return;
+        final boolean done = id.equals(prefs(context).getString(KEY_DONE, null));
         switch (offerOnWindows()) {
             case 'S':  // Windows shows it
                 context.getSystemService(NotificationManager.class).cancel(NOTIFICATION);
                 break;
             case 'O':  // registered from Windows before
-                done(context, id);
+                if (!done) done(context, id);
                 break;
             default:  // no WSA-Next host, or no icon there: Android's own notification
-                show(context, id);
+                if (!done) show(context, id);
                 break;
         }
     }

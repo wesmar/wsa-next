@@ -46,8 +46,11 @@ makes that a 30-second job: as soon as Play services have the device's ID, WSA-N
 Windows notification **"Register this PC with Google Play"**. Click it: the ID goes to the
 Windows clipboard and <https://www.google.com/android/uncertified> opens in your Windows
 browser. Sign in with your Google account, paste the ID, press **Register**. The notification
-comes back after every start until you have clicked it; **Register with Google Play…** in the
-menu of WSA-Next's notification-area icon does the same at any time.
+comes back after every start until you have clicked it. The same is always at hand: the
+**Register…** button in the window's **This PC** card (row **Google Play**), **Android › Register
+with Google Play…**, the menu of WSA-Next's notification-area icon, or
+`WSA-Next.exe register`. When Android has not handed the ID over yet, WSA-Next starts it and
+opens the page as soon as the ID arrives.
 
 ```mermaid
 %%{init: {"flowchart": {"curve": "basis"}} }%%
@@ -72,7 +75,7 @@ A new installation is a new device for Google; an update of WSA-Next keeps the r
 The same registration fixes the Play Store screen "Updating Google Play for you - Google Play
 will switch to the new language you chose - Couldn't finish the update": until Google knows the
 device, the Play Store cannot download its language pack (any language other than English).
-Missed the notification? The ID can also be read with `adb` (turn on **Advanced settings ›
+Without WSA-Next's window the ID can also be read with `adb` (turn on **Advanced settings ›
 Developer mode** in the WSA settings; `adb` is in Google's SDK Platform-Tools):
 `adb root`, then
 `adb shell "grep -o 'android_id\">[0-9]*' /data/data/com.google.android.gms/shared_prefs/Checkin.xml"`.
@@ -123,9 +126,11 @@ named `su`; WSA-Next has none, so there is nothing to hide (see
 [Why the command is `0`](#why-the-command-is-0-and-not-su)).
 
 **5. Everyday things.** The WSA-Next icon in the notification area (next to the clock) shows
-what runs and has the switches. **File › Stop WSA** frees the memory Android uses; it starts
-again with the next Android app. **File › Uninstall** removes WSA-Next and asks whether to keep
-your Android apps and data.
+what runs and has the switches. **Android › Android settings…** (also in the icon's menu, as
+**Android Settings** in the Start menu next to the Android apps, and `WSA-Next.exe settings`)
+opens Android's own settings: networks and the SIM, apps, storage, display. **File › Stop WSA**
+frees the memory Android uses; it starts again with the next Android app. **File › Uninstall**
+removes WSA-Next and asks whether to keep your Android apps and data.
 
 | Message | What it means |
 |---|---|
@@ -142,7 +147,7 @@ the stock vendor partition, SELinux **enforcing** and no manual tweaks:
 | Area | State |
 |---|---|
 | Boot, SELinux enforcing, Linux 6.18.64.1 LTS kernel (`linux-msft-wsl-6.18.y` + ACK ports) | works |
-| Android apps as Windows windows (open, move, resize, close) | works |
+| Android apps as Windows windows (open, move, resize, close) | works: Windows animates opening, closing and minimizing as for its own windows, and an app that starts through a launcher trampoline (the Play Store) opens as one window, where it was last |
 | Launching apps from Windows (`wsa://package`), Start menu shortcuts after install | works |
 | APK install with Windows package verification | works |
 | ARM apps: 32-bit through Intel Houdini (WSA's vendor partition); 64-bit through Houdini, or Google's `ndk_translation` in the Google Play variant | works |
@@ -155,7 +160,7 @@ the stock vendor partition, SELinux **enforcing** and no manual tweaks:
 | Hardware video decoding (H.264, HEVC, VP9, AV1 through the Windows host) | works |
 | Audio output and input | works |
 | Crash reports and ANR traces in WSA's Windows diagnostics folder | works |
-| Google Play variant: Play services, Play Store, Chrome and Google WebView (x86 and x86_64), all kept current by Google Play; sign-in and new accounts | works |
+| Google Play variant: Play services, Play Store, Chrome and Google WebView (x86 and x86_64), all kept current by Google Play; sign-in and new accounts; Google Password Manager for autofill and passkeys; font and emoji updates from Google | works |
 | App data backup to the Google account | works (WSA 2407 had no backup service) |
 | Bluetooth | in progress: the PC's adapter through `WSA-Next.exe` (**Bluetooth** menu): LE scanning, GATT (reads, writes, notifications, indications), pairing through Windows; classic Bluetooth (RFCOMM) not yet (WSA 2407 has no Bluetooth) |
 | Fingerprint | Windows Hello (fingerprint, face or PIN) as Android's fingerprint sensor, class WEAK (WSA 2407 has none) |
@@ -235,6 +240,9 @@ WSA-Next.exe hello remember [off|5|30|lock] [--yes]
                                      remember a Windows Hello confirmation for Android apps
 WSA-Next.exe elevation [on|off]      root for Android apps, every request confirmed with Windows Hello
 WSA-Next.exe launch                  start Android (opens the Play Store, or Android's Settings)
+WSA-Next.exe settings                open Android's own settings (networks, the SIM, apps, storage)
+WSA-Next.exe register                register this PC with Google Play: the device ID to the clipboard
+                                     and Google's page in the browser (starts Android when needed)
 WSA-Next.exe modem                   the PC's modem as Android sees it (SIM, network, stored messages)
 WSA-Next.exe lng-export|lng-check    language files (see Languages)
 ```
@@ -248,11 +256,14 @@ The window is only for installing and settings; Bluetooth, Windows Hello and roo
 live in the background host (`host --background`, started at logon), so closing the window
 changes nothing. The host has an icon in the notification area (**Android › Icon in the
 notification area**, on by default): its tooltip says whether Android runs, whether Bluetooth is
-connected and whether root is on; its menu opens WSA-Next and switches Bluetooth, root and su,
-stops WSA or the background services, and opens the log. Every root grant also shows as a
+connected and whether root is on; its menu opens WSA-Next or Android's settings, switches
+Bluetooth, root and su, stops WSA or the background services, and opens the log. Every root grant also shows as a
 Windows notification, so none goes unseen, and so does the Google Play registration of a new
-installation (with **Register with Google Play…** in the menu). The icon follows the host's
-change notices (WSA's VM up or down, a bridge connected) and never polls.
+installation (with **Register with Google Play…** in the menu). The host keeps the device ID
+Android hands it at every start, so the window's **Register…** button, the menu item and
+`WSA-Next.exe register` (they signal the named event `Local\WSA-Next.Host.Register`) work at any
+time. The icon follows the host's change notices (WSA's VM up or down, a bridge connected) and
+never polls.
 
 Pages the window or the host open (the releases, Google's registration page, **Donate**) open
 through Explorer: the browser runs with the user's rights, not elevated like WSA-Next.
@@ -374,6 +385,7 @@ The dynamic linker drops `LD_PRELOAD` and similar variables on the way into the 
 | Install folder | only what the installer wrote there (`wsa-next.json` lists it), then the folder if empty | same |
 | Android data disk (apps, accounts, files) in `%LOCALAPPDATA%\Packages\…` | **kept**, used again by the next installation | deleted |
 | Start menu entries, "Installed apps" entries, file and link associations of Android apps | removed by WSA with its package, created again by the next installation | removed, including what an earlier removal left behind |
+| WSA-Next's Start menu entry **Android Settings** (WsaClient lists Android's Settings nowhere) | removed | removed |
 | Notification settings, tiles, privacy consent, Windows caches of the package and the install folder | kept | removed |
 | WSA-Next settings (`HKCU\Software\KVC\WSA-Next`) and the host's digest cache (`HKLM\Software\KVC\WSA-Next\Digests`) | kept | removed |
 | Background host with the Bluetooth and Windows Hello bridges | stopped, no longer starts with Windows, its copy in `%ProgramFiles%\WSA-Next` removed | same, and also the Hyper-V socket service registrations of test builds and the log |
@@ -436,7 +448,11 @@ numbers in the scripts), builds with `/W4 /WX /sdl /guard:cf`, CET and `/Brepro`
 
 Release: `android/tools/package-release.sh` compresses the components and writes the manifest
 with the digests of the packed and the unpacked files (an unchanged component keeps its file, so
-an update only adds what changed). The publisher then signs the manifest (a catalog made with
+an update only adds what changed). The vendor image as the WSA tools unpack it carries
+`init.windows_x86_64.rc.backup` next to the patched `init.windows_x86_64.rc`, and init parsed it
+as a second script (Microsoft's early-init and fs actions ran twice); the script removes it with
+`debugfs` and keeps the cleaned image per input digest, so the vendor disk of a release changes
+only when Microsoft's does. The publisher then signs the manifest (a catalog made with
 `New-FileCatalog` and signed with the code signing certificate). A web server must serve `.zst`
 and `.cat` files (IIS: a `mimeMap` for each in `web.config`) and answer range requests. Served on
 the same computer as `/wsa-next`, the release is the source **local**
@@ -610,6 +626,7 @@ where possible.
 | `packages/services/Mms` 0001 MmsService: MMS through the WSA-Next host | Android has no cellular network in WSA, so MMS could not be downloaded or sent. With the `wsa-mms` daemon present, each HTTP exchange goes through a loopback tunnel to it, and WSA-Next on Windows opens the operator's MMS access point on the modem and connects. The "MMS data enabled" check is skipped (Android has no mobile data setting there). |
 | `packages/providers/TelephonyProvider` 0001 reload APNs when the build fingerprint changes | TelephonyProvider reloads `apns-conf.xml` only when `ro.build.id` changes, which WSA-Next releases of one Android version keep; an update never brought the APN list (and so MMS) to existing user data. |
 | `frameworks/base` 0005 input: no layout notification for built-in keyboards | WSA's keyboard is built in, and Windows applies the user's layout before Android sees a key, so Polish, German or other letters arrive right with Android's default layout. Android 15 still posted "Keyboard layout set to English (US). Tap to change" as a Windows notification after every start, and changing the layout there would translate the keys twice. External keyboards (USB, Bluetooth) still get the notification. |
+| `frameworks/base` 0006 WM: an app's window place is remembered for its launcher trampoline | Many apps start from a trampoline that starts the real activity in a new task and finishes (the Play Store's AssetBrowserActivity). Its splash screen makes it a Windows window for a moment; WSA's launch params modifier opens the real activity exactly there. When the app's window is saved (moved, closed), its place is now remembered for the trampoline too, so the next start opens both where the user left the app instead of a window that appears in one place and the app in another. |
 
 ## Device configuration notes
 
@@ -785,6 +802,16 @@ flowchart LR
   `ACTIVITY_RECOGNITION`. Without it Play services refuses every step counting registration, and
   Samsung Health crashed and restarted in a loop, each time posting its notifications to Windows
   again.
+* The same overlay sets what Google's own configuration overlay sets on phones for passwords
+  and fonts: Google Password Manager is the default autofill service and the Credential Manager
+  provider (`config_defaultAutofillService`, `config_enabledCredentialProviderService`,
+  `config_primaryCredentialProviderService` and the hybrid and dialog components), so "Sign in
+  with Google", saved passwords and passkeys work in apps; and `config_fontManagerServiceCerts`
+  trusts Google's fs-verity certificate, without which every font update from Google (new
+  emoji) failed with "Font validation failed". Play services is deliberately not the device
+  configurator (`config_deviceConfiguratorPackageName`): with that role Google treats the build
+  under its compliance rules and the Play Store showed "This device isn't Play Protect certified"
+  instead of its sign-in screen, even with the device ID registered.
 * Both HALs and the services that follow them are event driven: the HALs wait in `poll`/
   `accept`, system_server waits for their properties with `__system_property_wait`
   (`libwsanext_jni`), the Windows side connects when WSA's VM is up and learns of its end from
@@ -807,10 +834,16 @@ flowchart LR
 Not distributed; listed so that the design is understandable.
 
 * **wsa-services** (system_server classpath): WsaSystemService, WsaDisplayAreaPolicyProvider
-  and WsaLaunchParamsModifier, ported to Android 15 APIs.
+  and WsaLaunchParamsModifier, ported to Android 15 APIs. WsaLaunchParamsModifier places every
+  freeform task (Windows window) before AOSP's modifier; an activity started by a launcher
+  trampoline of its own app gets the trampoline's bounds, and windows of the same app are no
+  "conflict" to be stepped around.
 * **WsaSystemUI**: SystemUI-core plus Microsoft's shell classes. Classes that extend
   SystemUI / WM Shell internals were ported to source against Android 15; the rest is
-  kept as compiled bytecode. Microsoft's protobuf-lite runtime is relocated with jarjar
+  kept as compiled bytecode. A WM Shell transition handler ends window-level transitions
+  (a task that opens, closes, comes to the front or goes to the back) at once: Windows animates
+  its windows itself, and Android 15's own task animation inside the window arrived frame by
+  frame over the remote display and left a grey, half-transparent ghost when a window closed. Microsoft's protobuf-lite runtime is relocated with jarjar
   (Android 15 SystemUI links a newer, incompatible runtime). The SystemUI ProGuard rules
   are included (classes created from config strings, such as `VendorServices`).
 * **Ahead-of-time compilation**: WSA 2407 shipped oat files for all Microsoft apps; the
@@ -1107,7 +1140,9 @@ Debugging notes:
   domain of its own there.
 * Kernel 6.18 LTS tracking: migration off Microsoft's 2022 `5.15.104` WSA kernel to
   `linux-msft-wsl-6.18.y` (`6.18.64.1` LTS, with `ashmem`, `xt_quota2` and `uid_sys_stats`
-  ported from ACK `android15-6.6`) is complete; future releases track upstream 6.18 LTS updates.
+  ported from ACK `android15-6.6`, and ACK's cgroup v1 rule that lets system_server move apps
+  between the top-app, foreground and background groups) is complete; future releases track
+  upstream 6.18 LTS updates.
 * Android 18: parallel porting begins as soon as Android 18 lands in AOSP (potentially as early
   as February 2027), aiming for a working release by late summer 2027 with GPU/NPU acceleration,
   classic Bluetooth (RFCOMM), built-in laptop sensors, cameras, WWAN and native ARM64 builds.

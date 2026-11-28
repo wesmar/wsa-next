@@ -60,6 +60,8 @@
 11034=5 minuten lang
 11035=30 minuten lang
 11036=Tot Windows wordt vergrendeld
+11037=Android-instellingen…
+11038=Android-instellingen
 
 # Buttons and labels
 12000=Installeren
@@ -69,6 +71,7 @@
 12004=Wijzigen
 12005=Logboek
 12006=Doneren
+12007=Registreren…
 12010=Android 15 voor Windows
 12011=Deze pc
 12012=Onderdelen
@@ -109,6 +112,10 @@
 13025=alleen in de officiële (ondertekende) WSA-Next
 13026=alleen met een officiële, ongewijzigde WSA-Next-release
 13027=geïnstalleerde release controleren...
+13028=Google Play
+13029=niet vanaf deze pc geregistreerd
+13030=vanaf deze pc geregistreerd
+13031=wachten op Android...
 
 # Components
 13100=geïnstalleerd
@@ -152,6 +159,9 @@
 14026=WSA draait niet.
 14027=WSA kon niet worden gestopt (beheerdersrechten zijn nodig).
 14028=WSA stoppen...
+14029=ID gekopieerd - op de pagina van Google: aanmelden, plakken (Ctrl+V), Registreren.
+14030=Android start - de pagina van Google opent zodra het de ID doorgeeft.
+14031=De achtergrondservice van WSA-Next draait niet.
 
 # Dialogs
 15000=Eigen release
@@ -269,6 +279,7 @@
 17052=WSA is geregistreerd voor de Windows-gebruiker {} vanuit deze map: deze installatie werkt het bij voor die gebruiker.
 17053=WSA-Next {} geïnstalleerd voor de Windows-gebruiker {}. WSA blijft alleen voor die gebruiker geregistreerd: Windows staat maar één gebruiker tegelijk toe een uitgepakt pakket te registreren.
 17054=WSA is geregistreerd voor de Windows-gebruiker {} vanuit {}: de bestanden en wat het in Windows nodig heeft, blijven. Verwijder het op dat account.
+17055=De Android-instellingen staan in het Startmenu: {}
 
 # Errors
 18000=Alleen https://-adressen worden ondersteund (http:// alleen voor localhost).

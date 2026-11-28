@@ -39,4 +39,23 @@ inline bool HostRegistrationNotice() {
     return listener && listener();
 }
 
+// Auto-reset; created by the host. The window and the command line set it to have the host copy
+// the Google Play device ID and open Google's registration page (host/Registration.h) - at once
+// when Android has handed the ID over, otherwise as soon as it does. False: no host running.
+inline constexpr wchar_t kHostRegisterEvent[] = L"Local\\WSA-Next.Host.Register";
+
+inline bool RequestHostRegistration() {
+    const HANDLE event = OpenEventW(EVENT_MODIFY_STATE, FALSE, kHostRegisterEvent);
+    if (!event) return false;
+    AllowSetForegroundWindow(ASFW_ANY);  // the browser window the host opens may come to the front
+    SetEvent(event);
+    CloseHandle(event);
+    return true;
+}
+
+// Set by the host while Android has handed it the device ID (DWORD 1), 0 otherwise.
+inline constexpr wchar_t kGooglePlayIdKnownSetting[] = L"GooglePlayIdKnown";
+// A digest of the ID registered from Windows last (host/Registration.cpp); absent = never.
+inline constexpr wchar_t kGooglePlayRegisteredSetting[] = L"GooglePlayRegistered";
+
 }  // namespace WN

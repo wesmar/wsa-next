@@ -1,0 +1,51 @@
+WM: remember an app window's place for its launcher trampoline too.
+
+Many apps start from a launcher trampoline: an activity that starts the real one in a new task
+and finishes (the Play Store's AssetBrowserActivity starts UnauthenticatedMainActivity). On WSA
+every task is a Windows window, and the trampoline's splash screen makes its task a window for a
+moment. WSA's launch params modifier (vendor/wsa, WsaLaunchParamsModifier) opens the real activity
+exactly where the trampoline is and marks it with the trampoline's component; when the app's
+window is saved (moved by the user, closed), the same place is now remembered for the trampoline
+as well, so the next start opens both where the user left the app.
+
+diff --git a/services/core/java/com/android/server/wm/ActivityRecord.java b/services/core/java/com/android/server/wm/ActivityRecord.java
+--- a/services/core/java/com/android/server/wm/ActivityRecord.java
++++ b/services/core/java/com/android/server/wm/ActivityRecord.java
+@@ -683,6 +683,13 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
+     ITaskFragmentOrganizer mLastTaskFragmentOrganizerBeforePip;
+ 
+     boolean firstWindowDrawn;
++    /**
++     * The launcher trampoline this activity was started from: an activity of the same app that
++     * started it in a new task before drawing anything itself. The window of this activity's task
++     * also stands for the trampoline's launch position (LaunchParamsPersister).
++     */
++    @Nullable
++    ComponentName mLaunchedByTrampoline;
+     /** Whether the visible window(s) of this activity is drawn. */
+     private boolean mReportedDrawn;
+     private final WindowState.UpdateReportedVisibilityResults mReportedVisibilityResults =
+diff --git a/services/core/java/com/android/server/wm/LaunchParamsPersister.java b/services/core/java/com/android/server/wm/LaunchParamsPersister.java
+--- a/services/core/java/com/android/server/wm/LaunchParamsPersister.java
++++ b/services/core/java/com/android/server/wm/LaunchParamsPersister.java
+@@ -184,6 +184,20 @@ class LaunchParamsPersister {
+                     new LaunchParamsWriteQueueItem(userId, name, params),
+                     /* flush */ false);
+         }
++
++        // The window of an app started through a launcher trampoline also stands for the
++        // trampoline: its next start then opens where the user left the app's window.
++        final ActivityRecord root = task.getRootActivity();
++        final ComponentName trampoline = root != null ? root.mLaunchedByTrampoline : null;
++        if (trampoline != null && !trampoline.equals(name)) {
++            final PersistableLaunchParams alias =
++                    map.computeIfAbsent(trampoline, componentName -> new PersistableLaunchParams());
++            if (saveTaskToLaunchParam(task, display, alias)) {
++                mPersisterQueue.updateLastOrAddItem(
++                        new LaunchParamsWriteQueueItem(userId, trampoline, alias),
++                        /* flush */ false);
++            }
++        }
+     }
+ 
+     private boolean saveTaskToLaunchParam(

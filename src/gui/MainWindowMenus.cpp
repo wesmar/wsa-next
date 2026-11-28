@@ -46,6 +46,9 @@ void MainWindow::BuildMenus() {
     item(bluetooth, CmdBtLog, IDS_MI_BT_LOG);
 
     HMENU android = m.AddMenu(Text::Get(IDS_MENU_ANDROID));
+    item(android, CmdAndroidSettings, IDS_MI_ANDROID_SETTINGS);
+    item(android, CmdRegister, IDS_TRAY_REGISTER);
+    m.AddSeparator(android);
     item(android, CmdElevation, IDS_MI_ELEVATION);
     item(android, CmdElevationSu, IDS_MI_ELEVATION_SU);
     m.AddSeparator(android);

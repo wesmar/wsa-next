@@ -238,6 +238,9 @@ Result<RemovalOutcome> Uninstall(const fs::path& requested, Removal mode, const 
     const bool setupOwnsProgram = Install::SetupProduct().has_value();
     if (!other) RemoveFolder(folder, state, cb, outcome, setupOwnsProgram);
     if (!setupOwnsProgram && !other) RemoveHostCopy(folder, cb, outcome);
+    // WSA-Next's own Start menu entry for Android's Settings goes in both kinds of removal: WsaClient
+    // removes only the entries it made itself.
+    Install::RemoveAndroidSettingsShortcut();
     if (!everything) {
         phase(IDS_PHASE_DONE, 1000);
         return outcome;

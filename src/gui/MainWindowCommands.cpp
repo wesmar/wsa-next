@@ -12,6 +12,7 @@
 #include "install/Traces.h"
 #include "support/Browser.h"
 #include "support/Config.h"
+#include "support/HostEvents.h"
 #include "support/Settings.h"
 #include "support/Text.h"
 #include <ShObjIdl.h>
@@ -61,6 +62,13 @@ void MainWindow::OnCommand(UINT id, UINT /*code*/, HWND /*control*/) {
         break;
     case CmdCheck: Refresh(); break;
     case CmdLaunch: Launch(); break;
+    case CmdRegister: RegisterWithGoogle(); break;
+    case CmdAndroidSettings:
+        if (auto r = Install::LaunchAndroidSettings(); !r) {
+            Log(Level::Error, r.error());
+            SetStatus(Level::Error, r.error());
+        }
+        break;
     case CmdOpenFolder: ShellExecuteW(m_hwnd, L"open", m_folder.c_str(), nullptr, nullptr, SW_SHOWNORMAL); break;
     case CmdChangeFolder: ChangeFolder(); break;
     case CmdExit: PostMessageW(m_hwnd, WM_CLOSE, 0, 0); break;
@@ -351,6 +359,29 @@ void MainWindow::Launch() {
         Log(Level::Error, r.error());
         SetStatus(Level::Error, r.error());
     }
+}
+
+// Google Play registration: the background host knows the device ID (Android hands it over at every
+// start) and does the work - the ID to the clipboard, Google's page in the browser. Without the ID yet,
+// Android is started and the host finishes the job when the ID arrives.
+void MainWindow::RegisterWithGoogle() {
+    if (!RequestHostRegistration()) {
+        Log(Level::Error, Text::Get(IDS_STATUS_REGISTER_NOHOST));
+        SetStatus(Level::Error, Text::Get(IDS_STATUS_REGISTER_NOHOST));
+        return;
+    }
+    if (Settings::ReadDword(kGooglePlayIdKnownSetting, 0) != 0) {
+        Log(Level::Info, Text::Get(IDS_STATUS_REGISTER));
+        SetStatus(Level::Info, Text::Get(IDS_STATUS_REGISTER));
+        return;
+    }
+    m_googleWaiting = true;
+    Log(Level::Info, Text::Get(IDS_STATUS_REGISTER_WAIT));
+    SetStatus(Level::Info, Text::Get(IDS_STATUS_REGISTER_WAIT));
+    const RECT r{static_cast<LONG>(m_systemCard.left), static_cast<LONG>(m_systemCard.top), static_cast<LONG>(m_systemCard.right),
+                 static_cast<LONG>(m_systemCard.bottom)};
+    InvalidateRect(m_hwnd, &r, FALSE);
+    Launch();
 }
 
 // ---------------------------------------------------------------------------

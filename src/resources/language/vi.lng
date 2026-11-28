@@ -60,6 +60,8 @@
 11034=Trong 5 phút
 11035=Trong 30 phút
 11036=Đến khi khóa Windows
+11037=Cài đặt Android…
+11038=Cài đặt Android
 
 # Buttons and labels
 12000=Cài đặt
@@ -69,6 +71,7 @@
 12004=Thay đổi
 12005=Nhật ký
 12006=Ủng hộ
+12007=Đăng ký…
 12010=Android 15 cho Windows
 12011=Máy tính này
 12012=Thành phần
@@ -109,6 +112,10 @@
 13025=chỉ có trong WSA-Next chính thức (đã ký)
 13026=chỉ với bản phát hành WSA-Next chính thức, chưa bị thay đổi
 13027=đang kiểm tra bản phát hành đã cài đặt...
+13028=Google Play
+13029=chưa đăng ký từ máy tính này
+13030=đã đăng ký từ máy tính này
+13031=đang chờ Android...
 
 # Components
 13100=đã cài đặt
@@ -152,6 +159,9 @@
 14026=WSA không chạy.
 14027=Không thể dừng WSA (cần quyền quản trị viên).
 14028=Đang dừng WSA...
+14029=Đã sao chép ID - trên trang Google: đăng nhập, dán (Ctrl+V), Đăng ký.
+14030=Đang khởi động Android - trang Google sẽ mở khi nó cung cấp ID.
+14031=Dịch vụ nền của WSA-Next không chạy.
 
 # Dialogs
 15000=Bản phát hành tùy chỉnh
@@ -269,6 +279,7 @@
 17052=WSA được đăng ký cho người dùng Windows {} từ thư mục này: lần cài đặt này sẽ cập nhật nó cho người dùng đó.
 17053=Đã cài đặt WSA-Next {} cho người dùng Windows {}. WSA vẫn chỉ được đăng ký cho người dùng đó: Windows chỉ cho phép một người dùng mỗi lúc đăng ký gói đã giải nén.
 17054=WSA được đăng ký cho người dùng Windows {} từ {}: các tệp của nó và những gì nó cần trong Windows được giữ lại. Hãy gỡ bỏ nó trên tài khoản đó.
+17055=Cài đặt Android có trong menu Start: {}
 
 # Errors
 18000=Chỉ hỗ trợ địa chỉ https:// (http:// chỉ cho localhost).
